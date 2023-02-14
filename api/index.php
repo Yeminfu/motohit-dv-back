@@ -95,7 +95,6 @@ function api()
                     $repeats[] = $row_value;
                 } else {
                     $uniqs[] = $row_value;
-                    # code...
                 }
             }
         }
