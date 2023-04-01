@@ -1,6 +1,0 @@
-{
-    "require": {
-        "webonyx/graphql-php": "^15.0",
-        "thingengineer/mysqli-database-class": "dev-master"
-    }
-}
