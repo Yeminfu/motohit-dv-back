@@ -44,16 +44,19 @@ if ($json) {
             return "'$v'";
         }, array_values($values_from_post_json['data'])));
         $qs = "INSERT INTO users ($cols) VALUES ($values)";
-        $result = $mysqli->query($qs); //->fetch_all(MYSQLI_ASSOC);
-
-
+        $result = $mysqli->query($qs);
         echo json_encode([
             'create_user' => $result,
             'description' => 'ответ на создание пользователя',
-            '$values_from_post_json' => $values_from_post_json,
-            '$cols' => $cols,
-            '$values' => $values,
-            '$qs' => $qs,
+        ]);
+    }
+
+    if ($values_from_post_json['service'] == 'delete_user') {
+        $userId = $values_from_post_json['userId'];
+        $qs = "UPDATE users SET is_active = 0 WHERE id = $userId";
+        $result = $mysqli->query($qs);
+        echo json_encode([
+            "delete_user" => $result,
         ]);
     }
 }
