@@ -30,11 +30,19 @@ if ($json) {
     $values_from_post_json = json_decode($json, true);
 
     if ($values_from_post_json['service'] == 'get_users') {
-        $result = $mysqli->query("SELECT * from users")->fetch_all(MYSQLI_ASSOC);
-
+        $filterBy = [];
+        $columns = implode(',', $values_from_post_json['columns']);
+        if (isset($values_from_post_json['filterBy'])) {
+            foreach ($values_from_post_json['filterBy'] as $key => $value) {
+                $filterBy[] = "$key = '$value'";
+            }
+        }
+        $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
+        $qs = "SELECT $columns from users $where_string";
+        $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
         echo json_encode([
             'get_users' => $result,
-            'description' => 'ответ на получение списка пользователей'
+            'description' => 'ответ на получение списка пользователей',
         ]);
     }
 
@@ -57,6 +65,21 @@ if ($json) {
         $result = $mysqli->query($qs);
         echo json_encode([
             "delete_user" => $result,
+        ]);
+    }
+
+    if ($values_from_post_json['service'] == 'edit_users') {
+        $userId = $values_from_post_json['userId'];
+        $data = $values_from_post_json['data'];
+        $tostring = [];
+        foreach ($data as $key => $value) {
+            $tostring[] = "$key = '$value'";
+        }
+        $qs = "UPDATE users SET " . implode(', ', $tostring) . " WHERE id = $userId";
+        $result = $mysqli->query($qs);
+        echo json_encode([
+            "edit_users" => $result,
+            "description" => "Обновляем данные пользователя"
         ]);
     }
 }
