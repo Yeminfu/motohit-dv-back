@@ -103,23 +103,59 @@ if ($json) {
             'description' => 'ответ на получение списка товаров',
         ]);
     }
+
+    if ($values_from_post_json['service'] == 'delete_product') {
+        $productId = $values_from_post_json['productId'];
+        $qs = "UPDATE products SET is_active = 0 WHERE id = $productId";
+        $result = $mysqli->query($qs);
+        echo json_encode([
+            "delete_product" => $result,
+        ]);
+    }
 }
 
 if (isset($uri[1]) && $uri[1] == 'api') {
     if ((isset($uri[2]) && $uri[2] == 'create-product')) {
         $product_name = $_POST['product_name'];
+
+        if ($mysqli->query("SELECT * from products WHERE product_name='$product_name'")->num_rows) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Товар с таким названием уже существует',
+            ]);
+            exit();
+        }
+
         $price = $_POST['price'];
         $description = $_POST['description'];
-        $provider = $_POST['provider'];
+        $supplier = $_POST['supplier'];
         $characteristics = json_decode($_POST['characteristics']);
-        $qs = "INSERT INTO products (product_name,price,description) VALUES ('$product_name','$price','$description')";
+        $files = $_FILES;
+        foreach ($files as $key => $file) {
+            echo json_encode([
+                'success' => false,
+                'error' => [$key, $file['name'], $file],
+                // 'error' => implode('\n', [$key, $file])
+            ]);
+            exit();
+        }
+        $qs = "INSERT INTO products (product_name,price,description,supplier) VALUES ('$product_name','$price','$description','$supplier')";
         $result = $mysqli->query($qs);
+        // if ($mysqli->query("SELECT * from products product_name='$product_name'")->fetch_all(MYSQLI_ASSOC)) {
+
+        //     //     $qs = "SELECT $columns from products $where_string";
+        //     // $result = $mysqli->query("SELECT $columns from products $where_string")->fetch_all(MYSQLI_ASSOC);
+        // }
         echo json_encode([
-            'create-product' => [
-                'qs' => $qs,
-                'result' => $result,
-            ],
-            'description' => 'ответ на создание товара',
+            'success' => true,
+            // 'create-product' => [
+            //     'qs' => $qs,
+            //     'result' => $result,
+            //     'files' => $files,
+            //     'files' => array_keys($files)
+            // ],
+            // 'description' => 'ответ на создание товара',
+            // 'name is exists' => $mysqli->query("SELECT * from products WHERE product_name='$product_name'")->num_rows,
         ]);
         exit();
     }
