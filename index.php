@@ -14,6 +14,10 @@ header('Access-Control-Allow-Credentials: true');
 
 $json = file_get_contents('php://input');
 
+
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$uri = explode('/', $uri);
+
 $config = [
     'per_page_top_products' => 10
 ];
@@ -81,5 +85,42 @@ if ($json) {
             "edit_users" => $result,
             "description" => "Обновляем данные пользователя"
         ]);
+    }
+
+    if ($values_from_post_json['service'] == 'get_products') {
+        $filterBy = [];
+        $columns = implode(',', $values_from_post_json['columns']);
+        if (isset($values_from_post_json['filterBy'])) {
+            foreach ($values_from_post_json['filterBy'] as $key => $value) {
+                $filterBy[] = "$key = '$value'";
+            }
+        }
+        $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
+        $qs = "SELECT $columns from products $where_string";
+        $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        echo json_encode([
+            'get_products' => $result,
+            'description' => 'ответ на получение списка товаров',
+        ]);
+    }
+}
+
+if (isset($uri[1]) && $uri[1] == 'api') {
+    if ((isset($uri[2]) && $uri[2] == 'create-product')) {
+        $product_name = $_POST['product_name'];
+        $price = $_POST['price'];
+        $description = $_POST['description'];
+        $provider = $_POST['provider'];
+        $characteristics = json_decode($_POST['characteristics']);
+        $qs = "INSERT INTO products (product_name,price,description) VALUES ('$product_name','$price','$description')";
+        $result = $mysqli->query($qs);
+        echo json_encode([
+            'create-product' => [
+                'qs' => $qs,
+                'result' => $result,
+            ],
+            'description' => 'ответ на создание товара',
+        ]);
+        exit();
     }
 }
