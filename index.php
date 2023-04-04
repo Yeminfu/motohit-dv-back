@@ -122,7 +122,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Товар с таким названием уже существует',
-            ]);
+            ]); // не удалять, НУЖНАЯ ВЕЩЬ
             exit();
         }
 
@@ -131,31 +131,44 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         $supplier = $_POST['supplier'];
         $characteristics = json_decode($_POST['characteristics']);
         $files = $_FILES;
-        foreach ($files as $key => $file) {
-            echo json_encode([
-                'success' => false,
-                'error' => [$key, $file['name'], $file],
-                // 'error' => implode('\n', [$key, $file])
-            ]);
-            exit();
-        }
-        $qs = "INSERT INTO products (product_name,price,description,supplier) VALUES ('$product_name','$price','$description','$supplier')";
-        $result = $mysqli->query($qs);
-        // if ($mysqli->query("SELECT * from products product_name='$product_name'")->fetch_all(MYSQLI_ASSOC)) {
 
-        //     //     $qs = "SELECT $columns from products $where_string";
-        //     // $result = $mysqli->query("SELECT $columns from products $where_string")->fetch_all(MYSQLI_ASSOC);
-        // }
+        $qs = "INSERT INTO products (product_name,price,description,supplier) VALUES ('$product_name','$price','$description','$supplier');";
+        $mysqli->query($qs);
+        $new_product_id = $mysqli->insert_id;
+
+
+
+        foreach ($files as $file_name => $file) {
+            if ($mysqli->query("SELECT * from products_media WHERE name='$file_name'")->num_rows) { //проверка на наименование файла в бд
+                echo json_encode([
+                    'success' => false,
+                    'error' => "Файл с именем '$file_name' уже существует",
+                ]);
+                exit();
+            } else {
+                $uploaddir = __DIR__ . '/images/';
+                $uploadfile = $uploaddir . basename($file['name']);
+                if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
+                    $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$file_name','$new_product_id')";
+                    $result = $mysqli->query($qs);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => "Не удалось сохранить '$file_name'. Пожалуйста обратитесь в службу поддержки",
+                    ]);
+                }
+            }
+        }
         echo json_encode([
             'success' => true,
-            // 'create-product' => [
-            //     'qs' => $qs,
-            //     'result' => $result,
-            //     'files' => $files,
-            //     'files' => array_keys($files)
-            // ],
-            // 'description' => 'ответ на создание товара',
-            // 'name is exists' => $mysqli->query("SELECT * from products WHERE product_name='$product_name'")->num_rows,
+            'product' => [
+                'name' => $product_name,
+                'new_product_id' => $new_product_id,
+                'price' => $price,
+                'description' => $description,
+                'supplier' => $supplier,
+                'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
+            ],
         ]);
         exit();
     }
