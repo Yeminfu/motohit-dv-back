@@ -42,12 +42,19 @@ if ($json) {
             }
         }
         $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
-        $qs = "SELECT $columns from users $where_string";
-        $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
-        echo json_encode([
-            'get_users' => $result,
-            'description' => 'ответ на получение списка пользователей',
-        ]);
+        try {
+
+            $qs = "SELECT $columns from users $where_string";
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+            echo json_encode([
+                'success' => true,
+                'data' => $result,
+                'description' => 'ответ на запрос списка пользователей',
+            ]);
+            exit();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
     }
 
     if ($values_from_post_json['service'] == 'create_user') {
@@ -56,11 +63,21 @@ if ($json) {
             return "'$v'";
         }, array_values($values_from_post_json['data'])));
         $qs = "INSERT INTO users ($cols) VALUES ($values)";
-        $result = $mysqli->query($qs);
-        echo json_encode([
-            'create_user' => $result,
-            'description' => 'ответ на создание пользователя',
-        ]);
+        try {
+            $result = $mysqli->query($qs);
+            echo json_encode([
+                'success' => true,
+                'data' => "всё хорошо",
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ]);
+            // echo 'Caught exception: ',  $e->getMessage(), "\n";
+        }
+        // if ($mysqli->query($qs)) {
+        // }
     }
 
     if ($values_from_post_json['service'] == 'delete_user') {
@@ -132,9 +149,17 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         $characteristics = json_decode($_POST['characteristics']);
         $files = $_FILES;
 
-        $qs = "INSERT INTO products (product_name,price,description,supplier) VALUES ('$product_name','$price','$description','$supplier');";
-        $mysqli->query($qs);
-        $new_product_id = $mysqli->insert_id;
+        try {
+            $qs = "INSERT INTO products (product_name,price,description,supplier) VALUES ('$product_name','$price','$description','$supplier');";
+            $mysqli->query($qs);
+            $new_product_id = $mysqli->insert_id;
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Возможно не всё заполнили " . $th->getMessage(),
+            ]);
+            exit();
+        }
 
 
 
@@ -159,6 +184,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 }
             }
         }
+
         echo json_encode([
             'success' => true,
             'product' => [
