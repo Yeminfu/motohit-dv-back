@@ -80,6 +80,50 @@ if ($json) {
         // }
     }
 
+    if ($values_from_post_json['service'] == 'login') {
+
+        if (!isset($values_from_post_json['username'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Вы не ввели логин"
+            ]);
+            exit();
+        }
+        if (!isset($values_from_post_json['password'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Вы не ввели пароль"
+            ]);
+            exit();
+        }
+        $username = $values_from_post_json['username'];
+        $password = $values_from_post_json['password'];
+        $qs = "SELECT * FROM users WHERE username='$username' AND password='$password' AND is_active = 1";
+
+        $result = $mysqli->query($qs)->fetch_assoc();
+
+        if (!$result) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Нет такого пользователя',
+            ]);
+            exit();
+        }
+        
+        if ($result) {
+            echo json_encode([
+                'success' => true,
+                'data' => $result,
+            ]);
+            exit();
+        }
+
+        echo json_encode([
+            'success' => false,
+            'error' => 'Непредвиденная ошибка',
+        ]);
+        exit();
+    }
     if ($values_from_post_json['service'] == 'delete_user') {
         $userId = $values_from_post_json['userId'];
         $qs = "UPDATE users SET is_active = 0 WHERE id = $userId";
