@@ -21,19 +21,10 @@ function livenstein($string)
 {
     $words = [];
     for ($i = 0; $i <  strlen($string); $i++) {
-        $words[] = wrap(substr($string, 0, $i) . "." . substr($string, $i));
-        $words[] = wrap(substr($string, 0, $i) . substr($string, $i + 1));
-        $words[] = wrap(substr($string, 0, $i) . "." . substr($string, $i + 1));
+        $words[] = mb_substr($string, 0, $i) . "." . mb_substr($string, $i);
+        $words[] = mb_substr($string, 0, $i) . mb_substr($string, $i + 1);
+        $words[] = mb_substr($string, 0, $i) . "." . mb_substr($string, $i + 1);
     }
     $words[] = $string . ".";
     return $words;
-}
-
-function wrap($string)
-{
-    return  mb_convert_encoding(
-        $string,
-        'UTF-8',
-        'UTF-8'
-    );
 }
