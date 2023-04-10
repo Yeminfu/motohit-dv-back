@@ -187,18 +187,17 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Товар с таким названием уже существует',
-            ]); // не удалять, НУЖНАЯ ВЕЩЬ
+            ]);
             exit();
         }
 
         $price = $_POST['price'];
         $description = $_POST['description'];
-        $supplier = $_POST['supplier'];
         $characteristics = json_decode($_POST['characteristics']);
         $files = $_FILES;
 
         try {
-            $qs = "INSERT INTO products (product_name,price,description,supplier) VALUES ('$product_name','$price','$description','$supplier');";
+            $qs = "INSERT INTO products (product_name,price,description) VALUES ('$product_name','$price','$description');";
             $mysqli->query($qs);
             $new_product_id = $mysqli->insert_id;
         } catch (\Throwable $th) {
@@ -236,14 +235,14 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         echo json_encode([
             'success' => true,
             'product' => [
-                'name' => $product_name,
+                // 'name' => $product_name,
                 'new_product_id' => $new_product_id,
-                'price' => $price,
-                'description' => $description,
-                'supplier' => $supplier,
-                'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
+                // 'price' => $price,
+                // 'description' => $description,
+                // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
             ],
         ]);
+
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'hints')) {
