@@ -26,7 +26,7 @@ $config = [
     'per_page_top_products' => 10
 ];
 
-$mysqli = new mysqli("localhost", "admin", "xKF2eA", "china_kol");
+$mysqli = new mysqli("localhost", "admin", "xKF2eA", "motohit-dv");
 
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: " . $mysqli->connect_error;
