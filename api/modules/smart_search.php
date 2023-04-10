@@ -12,23 +12,28 @@ function smart_search($string)
         'error' => "Исходное значение должно иметь минимум 3 символа",
     ];
     $words = explode(" ", $string);
-    $words_with_livenstein = livenstein($words[0]);
-    echo json_encode($words_with_livenstein);
-    echo json_last_error_msg(); // Print out the error if any
-    die(); // halt the script
-    exit();
-    return livenstein($words[0]);
-    // return livenstein();
+    $words_with_livenstein = array_map('livenstein', $words);
+
+    return  $words_with_livenstein;
 }
 
 function livenstein($string)
 {
     $words = [];
     for ($i = 0; $i <  strlen($string); $i++) {
-        $words[] = substr($string, 0, $i) . "." . substr($string, $i);
-        $words[] = substr($string, 0, $i) . substr($string, $i + 1);
-        $words[] = substr($string, 0, $i) . "." . substr($string, $i + 1);
+        $words[] = wrap(substr($string, 0, $i) . "." . substr($string, $i));
+        $words[] = wrap(substr($string, 0, $i) . substr($string, $i + 1));
+        $words[] = wrap(substr($string, 0, $i) . "." . substr($string, $i + 1));
     }
     $words[] = $string . ".";
     return $words;
+}
+
+function wrap($string)
+{
+    return  mb_convert_encoding(
+        $string,
+        'UTF-8',
+        'UTF-8'
+    );
 }
