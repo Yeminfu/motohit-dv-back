@@ -1,6 +1,5 @@
 <?php
 
-
 function smart_search($string)
 {
     if (gettype($string) != "string") return [
@@ -14,7 +13,22 @@ function smart_search($string)
     $words = explode(" ", $string);
     $words_with_livenstein = array_map('livenstein', $words);
 
-    return  $words_with_livenstein;
+    $regexps = array_map(
+        function ($item) {
+            $implodes = implode(
+                "|",
+                $item
+            );
+            return "product_name REGEXP '$implodes'";
+        },
+        $words_with_livenstein
+    );
+
+    $imploded_regexps = implode(" AND ", $regexps);
+
+    $qs = "SELECT * from products WHERE $imploded_regexps";
+
+    return  $qs;
 }
 
 function livenstein($string)
