@@ -11,7 +11,14 @@ function smart_search($string)
         'success' => false,
         'error' => "Исходное значение должно иметь минимум 3 символа",
     ];
-    return gettype($string) != "string";
+    $words = explode(" ", $string);
+    $words_with_livenstein = livenstein($words[0]);
+    echo json_encode($words_with_livenstein);
+    echo json_last_error_msg(); // Print out the error if any
+    die(); // halt the script
+    exit();
+    return livenstein($words[0]);
+    // return livenstein();
 }
 
 function livenstein($string)
