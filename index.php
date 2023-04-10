@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 
-error_reporting(E_ALL);
 ini_set('display_errors', 'On');
+// ini_set('display_startup_errors', 1);
+// ini_set('display_errors', 1);
+error_reporting(E_ALL);
+// error_reporting(-1);
+
 
 header('Content-type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: *");
@@ -109,7 +113,7 @@ if ($json) {
             ]);
             exit();
         }
-        
+
         if ($result) {
             echo json_encode([
                 'success' => true,
@@ -243,9 +247,10 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'hints')) {
-        require_once __DIR__."/api/modules/smart_search.php";
+        require_once __DIR__ . "/api/modules/smart_search.php";
         echo json_encode(
-            smart_search("223")
+            smart_search("мопед крутой")
         );
+        exit();
     }
 }

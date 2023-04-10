@@ -11,21 +11,17 @@ function smart_search($string)
         'success' => false,
         'error' => "Исходное значение должно иметь минимум 3 символа",
     ];
-    $words = explode(" ", $string);
-    return $words;
-    // if(gettype())
-    // if(strlen($string))
-    // return explode(" ", $string);
+    return gettype($string) != "string";
 }
 
-// function livenstein($string)
-// {
-//     $words = [];
-//     for ($i = 0; $i <  strlen($string); $i++) {
-//         $words[] = substr($string, 0, $i) . "." . substr($string, $i);
-//         $words[] = substr($string, 0, $i) . substr($string, $i + 1);
-//         $words[] = substr($string, 0, $i) . "." . substr($string, $i + 1);
-//     }
-//     $words[] = $string . ".";
-//     return $words;
-// }
+function livenstein($string)
+{
+    $words = [];
+    for ($i = 0; $i <  strlen($string); $i++) {
+        $words[] = substr($string, 0, $i) . "." . substr($string, $i);
+        $words[] = substr($string, 0, $i) . substr($string, $i + 1);
+        $words[] = substr($string, 0, $i) . "." . substr($string, $i + 1);
+    }
+    $words[] = $string . ".";
+    return $words;
+}
