@@ -244,9 +244,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
     }
     if ((isset($uri[2]) && $uri[2] == 'hints')) {
         require_once __DIR__."/api/modules/smart_search.php";
-        // echo 333;
         echo json_encode(
-            smart_search()
+            smart_search("223")
         );
     }
 }
