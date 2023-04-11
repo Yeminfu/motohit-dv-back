@@ -299,12 +299,27 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             exit();
         }
 
+
         $description = $_POST['description'];
         // $characteristics = json_decode($_POST['characteristics']);
         $files = $_FILES;
 
+        $parent = (isset($_POST['parent'])) ? ("'" . $_POST['parent'] . "'") : null;
+
+        $params = [
+            'category_name' => $category_name,
+            'description' => $description,
+        ];
+        if (isset($_POST['parent'])) $params['parent'] = $_POST['parent'];
+
+        $cols = implode(",", array_keys($params));
+        $values = implode(",", array_map(function ($value) {
+            return "'$value'";
+        }, array_values($params)));
+
+        $qs = "INSERT INTO categories ($cols) VALUES ($values)";
+
         try {
-            $qs = "INSERT INTO categories (category_name,description) VALUES ('$category_name','$description');";
             $mysqli->query($qs);
             $new_category_id = $mysqli->insert_id;
         } catch (\Throwable $th) {
@@ -315,6 +330,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             exit();
         }
 
+        //TODO добавить в бд возможность создания картинок для категорий
 
 
         // foreach ($files as $file_name => $file) {
