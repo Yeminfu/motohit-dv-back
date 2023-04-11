@@ -192,6 +192,33 @@ if ($json) {
         );
         exit();
     }
+
+    if ($values_from_post_json['service'] == 'get-categories') {
+        try {
+            $qs = "SELECT * from categories WHERE is_active = 1";
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $th) {
+            //throw $th;
+            echo json_encode([
+                'success' => true,
+                'error' => "Что-то пошло не так"
+            ]);
+            exit();
+        }
+
+        if (count($result) == 0) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Категории не созданы"
+            ]);
+            exit();
+        }
+
+        echo json_encode([
+            'data' => $result
+        ]);
+        exit();
+    }
 }
 
 if (isset($uri[1]) && $uri[1] == 'api') {
