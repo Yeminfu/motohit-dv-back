@@ -1,12 +1,12 @@
 <?php
-
 function smart_search($string)
 {
+    global $mysqli;
     if (gettype($string) != "string") return [
         'success' => false,
         'error' => "Исходное значение должно быть строкой",
     ];
-    if (strlen($string) < 3) return [
+    if (mb_strlen($string) < 3) return [
         'success' => false,
         'error' => "Исходное значение должно иметь минимум 3 символа",
     ];
@@ -27,8 +27,24 @@ function smart_search($string)
     $imploded_regexps = implode(" AND ", $regexps);
 
     $qs = "SELECT * from products WHERE $imploded_regexps";
+    $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
 
-    return  $qs;
+    if (count($result)) {
+        return [
+            'success' => true,
+            'data' => array_map(
+                function ($item) {
+                    return $item['product_name'];
+                },
+                $result
+            ),
+        ];
+    } else {
+        return [
+            'success' => false,
+            'error' => "Нет подсказок",
+        ];
+    }
 }
 
 function livenstein($string)

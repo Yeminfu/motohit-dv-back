@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 
 ini_set('display_errors', 'On');
-// ini_set('display_startup_errors', 1);
-// ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 // error_reporting(-1);
 
@@ -26,7 +25,7 @@ $config = [
     'per_page_top_products' => 10
 ];
 
-$mysqli = new mysqli("localhost", "admin", "xKF2eA", "motohit-dv");
+require __DIR__ . "/api/modules/mysqli.php";
 
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: " . $mysqli->connect_error;
@@ -177,6 +176,22 @@ if ($json) {
             "delete_product" => $result,
         ]);
     }
+
+    if ($values_from_post_json['service'] == 'hints') {
+        require_once __DIR__ . "/api/modules/smart_search.php";
+        $text = $values_from_post_json['text'];
+        if (!isset($values_from_post_json['text'])) {
+            echo json_encode([
+                "success" => false,
+                "error" => "Нет входящей строки"
+            ]);
+            exit();
+        }
+        echo json_encode(
+            smart_search($text)
+        );
+        exit();
+    }
 }
 
 if (isset($uri[1]) && $uri[1] == 'api') {
@@ -243,13 +258,6 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             ],
         ]);
 
-        exit();
-    }
-    if ((isset($uri[2]) && $uri[2] == 'hints')) {
-        require_once __DIR__ . "/api/modules/smart_search.php";
-        echo json_encode(
-            smart_search("мопед крутой")
-        );
         exit();
     }
 }
