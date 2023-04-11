@@ -26,7 +26,7 @@ $config = [
     'per_page_top_products' => 10
 ];
 
-require_once __DIR__."/api/modules/mysqli.php";
+require __DIR__."/api/modules/mysqli.php";
 
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: " . $mysqli->connect_error;

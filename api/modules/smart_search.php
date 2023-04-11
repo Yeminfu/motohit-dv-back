@@ -1,7 +1,7 @@
 <?php
-
 function smart_search($string)
 {
+    global $mysqli;
     if (gettype($string) != "string") return [
         'success' => false,
         'error' => "Исходное значение должно быть строкой",
@@ -27,8 +27,27 @@ function smart_search($string)
     $imploded_regexps = implode(" AND ", $regexps);
 
     $qs = "SELECT * from products WHERE $imploded_regexps";
+    $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
 
-    return  $qs;
+    if (count($result)) {
+        return [
+            'success' => true,
+            'data' => $result,
+        ];
+    }else{
+        return [
+            'success' => true,
+            'error' => "Нет подсказок",
+        ];
+    }
+
+    // $mysqli;
+    // return [
+    //     // 'exists'=> isset($mysqli)
+    //     'qs' => $qs,
+    //     '$result' => $result
+    // ];
+    // return  $qs;
 }
 
 function livenstein($string)
