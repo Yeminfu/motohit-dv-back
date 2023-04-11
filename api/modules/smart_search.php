@@ -6,7 +6,7 @@ function smart_search($string)
         'success' => false,
         'error' => "Исходное значение должно быть строкой",
     ];
-    if (strlen($string) < 3) return [
+    if (mb_strlen($string) < 3) return [
         'success' => false,
         'error' => "Исходное значение должно иметь минимум 3 символа",
     ];
@@ -34,20 +34,13 @@ function smart_search($string)
             'success' => true,
             'data' => $result,
         ];
-    }else{
+    } else {
         return [
-            'success' => true,
+            'success' => false,
             'error' => "Нет подсказок",
         ];
     }
 
-    // $mysqli;
-    // return [
-    //     // 'exists'=> isset($mysqli)
-    //     'qs' => $qs,
-    //     '$result' => $result
-    // ];
-    // return  $qs;
 }
 
 function livenstein($string)
