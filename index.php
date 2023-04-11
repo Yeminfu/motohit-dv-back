@@ -235,12 +235,24 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         }
 
         $price = $_POST['price'];
+        $category = $_POST['category'];
         $description = $_POST['description'];
         $characteristics = json_decode($_POST['characteristics']);
         $files = $_FILES;
 
+        $params = [
+            'product_name' => $product_name,
+            'price' => $price,
+            'description' => $description,
+            'category' => $category,
+        ];
+        
         try {
-            $qs = "INSERT INTO products (product_name,price,description) VALUES ('$product_name','$price','$description');";
+            $cols = implode(",", array_keys($params));
+            $values = implode(",", array_map(function ($value) {
+                return "'$value'";
+            }, array_values($params)));
+            $qs = "INSERT INTO products ($cols) VALUES ($values)";
             $mysqli->query($qs);
             $new_product_id = $mysqli->insert_id;
         } catch (\Throwable $th) {
