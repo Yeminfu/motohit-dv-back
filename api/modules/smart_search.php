@@ -32,7 +32,12 @@ function smart_search($string)
     if (count($result)) {
         return [
             'success' => true,
-            'data' => $result,
+            'data' => array_map(
+                function ($item) {
+                    return $item['product_name'];
+                },
+                $result
+            ),
         ];
     } else {
         return [
@@ -40,7 +45,6 @@ function smart_search($string)
             'error' => "Нет подсказок",
         ];
     }
-
 }
 
 function livenstein($string)
