@@ -26,7 +26,9 @@ $config = [
     'per_page_top_products' => 10
 ];
 
-$mysqli = new mysqli("localhost", "admin", "xKF2eA", "motohit-dv");
+require_once __DIR__."/api/modules/mysqli.php";
+
+// $mysqli = new mysqli("localhost", "admin", "xKF2eA", "motohit-dv");
 
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: " . $mysqli->connect_error;
@@ -177,6 +179,14 @@ if ($json) {
             "delete_product" => $result,
         ]);
     }
+
+    if ($values_from_post_json['service'] == 'hints') {
+        require_once __DIR__ . "/api/modules/smart_search.php";
+        echo json_encode(
+            smart_search("мопед крутой")
+        );
+        exit();
+    }
 }
 
 if (isset($uri[1]) && $uri[1] == 'api') {
@@ -243,13 +253,6 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             ],
         ]);
 
-        exit();
-    }
-    if ((isset($uri[2]) && $uri[2] == 'hints')) {
-        require_once __DIR__ . "/api/modules/smart_search.php";
-        echo json_encode(
-            smart_search("мопед крутой")
-        );
         exit();
     }
 }
