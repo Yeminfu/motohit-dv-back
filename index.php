@@ -215,6 +215,7 @@ if ($json) {
         }
 
         echo json_encode([
+            'success' => true,
             'data' => $result
         ]);
         exit();
@@ -279,6 +280,70 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             'product' => [
                 // 'name' => $product_name,
                 'new_product_id' => $new_product_id,
+                // 'price' => $price,
+                // 'description' => $description,
+                // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
+            ],
+        ]);
+
+        exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'create-category')) {
+        $category_name = $_POST['category_name'];
+
+        if ($mysqli->query("SELECT * from categories WHERE category_name='$category_name'")->num_rows) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Категория с таким названием уже существует',
+            ]);
+            exit();
+        }
+
+        $description = $_POST['description'];
+        // $characteristics = json_decode($_POST['characteristics']);
+        $files = $_FILES;
+
+        try {
+            $qs = "INSERT INTO categories (category_name,description) VALUES ('$category_name','$description');";
+            $mysqli->query($qs);
+            $new_category_id = $mysqli->insert_id;
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Возможно не всё заполнили " . $th->getMessage(),
+            ]);
+            exit();
+        }
+
+
+
+        // foreach ($files as $file_name => $file) {
+        //     if ($mysqli->query("SELECT * from products_media WHERE name='$file_name'")->num_rows) { //проверка на наименование файла в бд
+        //         echo json_encode([
+        //             'success' => false,
+        //             'error' => "Файл с именем '$file_name' уже существует",
+        //         ]);
+        //         exit();
+        //     } else {
+        //         $uploaddir = __DIR__ . '/images/';
+        //         $uploadfile = $uploaddir . basename($file['name']);
+        //         if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
+        //             $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$file_name','$new_product_id')";
+        //             $result = $mysqli->query($qs);
+        //         } else {
+        //             echo json_encode([
+        //                 'success' => false,
+        //                 'error' => "Не удалось сохранить '$file_name'. Пожалуйста обратитесь в службу поддержки",
+        //             ]);
+        //         }
+        //     }
+        // }
+
+        echo json_encode([
+            'success' => true,
+            'product' => [
+                // 'name' => $product_name,
+                'new_category_id' => $new_category_id,
                 // 'price' => $price,
                 // 'description' => $description,
                 // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
