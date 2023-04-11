@@ -28,8 +28,6 @@ $config = [
 
 require_once __DIR__."/api/modules/mysqli.php";
 
-// $mysqli = new mysqli("localhost", "admin", "xKF2eA", "motohit-dv");
-
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: " . $mysqli->connect_error;
     exit();
