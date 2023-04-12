@@ -200,8 +200,8 @@ if ($json) {
         } catch (\Throwable $th) {
             //throw $th;
             echo json_encode([
-                'success' => true,
-                'error' => "Что-то пошло не так"
+                'success' => false,
+                'error' => "Что-то пошло не так " . $th->getMessage()
             ]);
             exit();
         }
@@ -219,6 +219,89 @@ if ($json) {
             'data' => $result
         ]);
         exit();
+    }
+
+    if ($values_from_post_json['service'] == 'create-attribute') {
+        if (!isset($values_from_post_json['attribute_name'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задано название атрибута',
+            ]);
+            exit();
+        }
+        if (!isset($values_from_post_json['category'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задана категория товаров',
+            ]);
+            exit();
+        }
+
+        $category = $values_from_post_json['category'];
+        $attribute_name = $values_from_post_json['attribute_name'];
+
+        if ($mysqli->query("SELECT * from attributes WHERE category='$category' AND attribute_name='$attribute_name'")->num_rows) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Такой атрибут уже существует',
+            ]);
+            exit();
+        }
+
+        $params = [
+            'category' => $category,
+            'attribute_name' => $attribute_name,
+        ];
+        $cols = implode(",", array_keys($params));
+        $values = implode(",", array_map(function ($value) {
+            return "'$value'";
+        }, array_values($params)));
+
+
+        try {
+            $qs = "INSERT INTO attributes ($cols) VALUES ($values)";
+            $mysqli->query($qs);
+            $new_attribute = $mysqli->insert_id;
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Возможно не всё заполнили " . $th->getMessage(),
+            ]);
+            exit();
+        }
+
+        if ($new_attribute) {
+            echo json_encode([
+                'success' => true,
+                'data' => $new_attribute
+            ]);
+        }
+
+        // try {
+        //     $qs = "SELECT * from categories WHERE is_active = 1";
+        //     $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        // } catch (\Throwable $th) {
+        //     //throw $th;
+        //     echo json_encode([
+        //         'success' => true,
+        //         'error' => "Что-то пошло не так"
+        //     ]);
+        //     exit();
+        // }
+
+        // if (count($result) == 0) {
+        //     echo json_encode([
+        //         'success' => false,
+        //         'error' => "Категории не созданы"
+        //     ]);
+        //     exit();
+        // }
+
+        // echo json_encode([
+        //     'success' => true,
+        //     'data' => $result
+        // ]);
+        // exit();
     }
 }
 
@@ -246,7 +329,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             'description' => $description,
             'category' => $category,
         ];
-        
+
         try {
             $cols = implode(",", array_keys($params));
             $values = implode(",", array_map(function ($value) {
