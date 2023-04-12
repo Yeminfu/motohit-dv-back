@@ -276,32 +276,6 @@ if ($json) {
                 'data' => $new_attribute
             ]);
         }
-
-        // try {
-        //     $qs = "SELECT * from categories WHERE is_active = 1";
-        //     $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
-        // } catch (\Throwable $th) {
-        //     //throw $th;
-        //     echo json_encode([
-        //         'success' => true,
-        //         'error' => "Что-то пошло не так"
-        //     ]);
-        //     exit();
-        // }
-
-        // if (count($result) == 0) {
-        //     echo json_encode([
-        //         'success' => false,
-        //         'error' => "Категории не созданы"
-        //     ]);
-        //     exit();
-        // }
-
-        // echo json_encode([
-        //     'success' => true,
-        //     'data' => $result
-        // ]);
-        // exit();
     }
 }
 
