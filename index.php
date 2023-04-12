@@ -303,7 +303,7 @@ if ($json) {
             ]);
             exit();
         }
-// echo 123;
+
         $params = [
             'attribute' => $attribute,
             'value_name' => $value_name,
@@ -346,6 +346,12 @@ if ($values_from_post_json['service'] == 'get-attributes') {
         ]);
         exit();
     }
+    
+    array_walk($result, function(&$attribute){
+        global $mysqli;
+        $attribute_id =$attribute['id']; 
+        $attribute['values'] = $mysqli->query("SELECT * from attributes_values WHERE attribute = $attribute_id")->fetch_all(MYSQLI_ASSOC);
+    });
 
     if (count($result)) {
         echo json_encode([
