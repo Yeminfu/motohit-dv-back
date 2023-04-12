@@ -279,6 +279,31 @@ if ($json) {
     }
 }
 
+if ($values_from_post_json['service'] == 'get-attributes') {
+    try {
+        $qs = "SELECT * from attributes";
+        $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+    } catch (\Throwable $th) {
+        echo json_encode([
+            'success' => false,
+            'error' => "Что-то пошло не так [get-attributes]" . $th->getMessage()
+        ]);
+        exit();
+    }
+
+    if (count($result)) {
+        echo json_encode([
+            'success' => true,
+            'data' => $result
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'error' => "Атрибуты не созданы"
+        ]);
+    }
+}
+
 if (isset($uri[1]) && $uri[1] == 'api') {
     if ((isset($uri[2]) && $uri[2] == 'create-product')) {
         $product_name = $_POST['product_name'];
