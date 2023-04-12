@@ -277,6 +277,62 @@ if ($json) {
             ]);
         }
     }
+    if ($values_from_post_json['service'] == 'create-attribute_value') {
+        if (!isset($values_from_post_json['attribute'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задан атрибут',
+            ]);
+            exit();
+        }
+        if (!isset($values_from_post_json['attribute_value'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задано значение атрибута',
+            ]);
+            exit();
+        }
+
+        $attribute = $values_from_post_json['attribute'];
+        $value_name = $values_from_post_json['attribute_value'];
+
+        if ($mysqli->query("SELECT * from attributes_values WHERE attribute='$attribute' AND value_name='$value_name'")->num_rows) { // TODO value_name заменить на value
+            echo json_encode([
+                'success' => false,
+                'error' => 'Такой атрибут уже существует',
+            ]);
+            exit();
+        }
+// echo 123;
+        $params = [
+            'attribute' => $attribute,
+            'value_name' => $value_name,
+        ];
+        $cols = implode(",", array_keys($params));
+        $values = implode(",", array_map(function ($value) {
+            return "'$value'";
+        }, array_values($params)));
+
+
+        try {
+            $qs = "INSERT INTO attributes_values ($cols) VALUES ($values)";
+            $mysqli->query($qs);
+            $new_attribute_value = $mysqli->insert_id;
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Возможно не всё заполнили " . $th->getMessage(),
+            ]);
+            exit();
+        }
+
+        if ($new_attribute_value) {
+            echo json_encode([
+                'success' => true,
+                'data' => $new_attribute_value
+            ]);
+        }
+    }
 }
 
 if ($values_from_post_json['service'] == 'get-attributes') {
