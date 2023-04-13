@@ -333,36 +333,37 @@ if ($json) {
             ]);
         }
     }
-}
 
-if ($values_from_post_json['service'] == 'get-attributes') {
-    try {
-        $qs = "SELECT * from attributes";
-        $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
-    } catch (\Throwable $th) {
-        echo json_encode([
-            'success' => false,
-            'error' => "Что-то пошло не так [get-attributes]" . $th->getMessage()
-        ]);
-        exit();
-    }
-    
-    array_walk($result, function(&$attribute){
-        global $mysqli;
-        $attribute_id =$attribute['id']; 
-        $attribute['values'] = $mysqli->query("SELECT * from attributes_values WHERE attribute = $attribute_id")->fetch_all(MYSQLI_ASSOC);
-    });
+    if ($values_from_post_json['service'] == 'get-attributes') {
 
-    if (count($result)) {
-        echo json_encode([
-            'success' => true,
-            'data' => $result
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'error' => "Атрибуты не созданы"
-        ]);
+        try {
+            $qs = "SELECT * from attributes";
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Что-то пошло не так [get-attributes]" . $th->getMessage()
+            ]);
+            exit();
+        }
+
+        array_walk($result, function (&$attribute) {
+            global $mysqli;
+            $attribute_id = $attribute['id'];
+            $attribute['values'] = $mysqli->query("SELECT * from attributes_values WHERE attribute = $attribute_id")->fetch_all(MYSQLI_ASSOC);
+        });
+
+        if (count($result)) {
+            echo json_encode([
+                'success' => true,
+                'data' => $result
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => "Атрибуты не созданы"
+            ]);
+        }
     }
 }
 
@@ -381,7 +382,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         $price = $_POST['price'];
         $category = $_POST['category'];
         $description = $_POST['description'];
-        $characteristics = json_decode($_POST['characteristics']);
+        $attributes = json_decode($_POST['attributes']);
         $files = $_FILES;
 
         $params = [
@@ -431,14 +432,33 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             }
         }
 
+        foreach ($attributes as $attribute) {
+            $params = [
+                'attribute' => $attribute->attribute,
+                'attribute_value' => $attribute->value_name,
+                'product' => $new_product_id,
+            ];
+            $cols = implode(",", array_keys($params));
+            $values = implode(",", array_map(function ($value) {
+                return "'$value'";
+            }, array_values($params)));
+            $qs = "INSERT INTO attr_prod_relation ($cols) VALUES ($values)";
+            try {
+                $mysqli->query($qs);
+                $new_category_id = $mysqli->insert_id;
+            } catch (\Throwable $th) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => "Товар создан, но есть проблемы с атрибутами " . $th->getMessage(),
+                ]);
+                exit();
+            }
+        }
+
         echo json_encode([
             'success' => true,
             'product' => [
-                // 'name' => $product_name,
                 'new_product_id' => $new_product_id,
-                // 'price' => $price,
-                // 'description' => $description,
-                // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
             ],
         ]);
 
