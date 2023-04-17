@@ -22,7 +22,8 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = explode('/', $uri);
 
 $config = [
-    'per_page_top_products' => 10
+    'per_page_top_products' => 10,
+    "uploaddir" => __DIR__ . '/images/'
 ];
 
 require __DIR__ . "/api/modules/mysqli.php";
@@ -153,7 +154,7 @@ if ($json) {
 
     if ($values_from_post_json['service'] == 'get_products') {
         $filterBy = [];
-        $columns = implode(",", ["id","stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
+        $columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
 
         if (isset($values_from_post_json['filterBy'])) {
             foreach ($values_from_post_json['filterBy'] as $key => $value) {
@@ -179,6 +180,11 @@ if ($json) {
                 $attributes[$key]['value'] = $attribute_value['value_name'] ?? "значение не указано";
             }
             $product['attributes'] = ($attributes);
+
+            $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id AND type='image_full'")->fetch_all(MYSQLI_ASSOC);
+            $product['images'] = array_map(function ($image) {
+                return $_SERVER['SERVER_NAME'] . "/images/" . $image['name'];
+            }, $images);
         });
 
         echo json_encode([
@@ -198,7 +204,6 @@ if ($json) {
 
 
     if ($values_from_post_json['service'] == 'get-stock-statuses') {
-        
         $qs = "SELECT * FROM stock_statuses";
         try {
             $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
@@ -457,23 +462,26 @@ if (isset($uri[1]) && $uri[1] == 'api') {
 
 
 
-        foreach ($files as $file_name => $file) {
-            if ($mysqli->query("SELECT * from products_media WHERE name='$file_name'")->num_rows) { //проверка на наименование файла в бд
+        foreach ($files as $not_named_variable_name => $file) {
+
+            $fileName = basename($file['name']);
+            if ($mysqli->query("SELECT * from products_media WHERE name='$fileName'")->num_rows) { //проверка на наименование файла в бд
                 echo json_encode([
                     'success' => false,
-                    'error' => "Файл с именем '$file_name' уже существует",
+                    'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
                 ]);
                 exit();
             } else {
-                $uploaddir = __DIR__ . '/images/';
-                $uploadfile = $uploaddir . basename($file['name']);
+
+                $uploadfile = $config['uploaddir'] . basename($file['name']);
                 if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
-                    $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$file_name','$new_product_id')";
+
+                    $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$fileName','$new_product_id')";
                     $result = $mysqli->query($qs);
                 } else {
                     echo json_encode([
                         'success' => false,
-                        'error' => "Не удалось сохранить '$file_name'. Пожалуйста обратитесь в службу поддержки",
+                        'error' => "Не удалось сохранить '$fileName'. Пожалуйста обратитесь в службу поддержки",
                     ]);
                 }
             }
