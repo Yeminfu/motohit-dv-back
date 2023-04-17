@@ -428,6 +428,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         $category = $_POST['category'];
         $description = $_POST['description'];
         $attributes = json_decode($_POST['attributes']);
+        $stock_status = $_POST['stock_status'];
         $files = $_FILES;
 
         $params = [
@@ -435,6 +436,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             'price' => $price,
             'description' => $description,
             'category' => $category,
+            'stock_status' => $stock_status,
         ];
 
         try {
