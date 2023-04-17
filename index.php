@@ -160,9 +160,27 @@ if ($json) {
                 $filterBy[] = "$key = '$value'";
             }
         }
+
+
         $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
         $qs = "SELECT $columns from products $where_string";
         $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+
+        array_walk($result, function (&$product) {
+            global $mysqli;
+            $product_category = $product['category'];
+            $product_id = $product['id'];
+            $attributes = $mysqli->query("SELECT id, attribute_name FROM attributes WHERE category = '$product_category'")->fetch_all(MYSQLI_ASSOC);
+            foreach ($attributes as $key => $attribute) {
+                $attribute_id = $attribute['id'];
+                $attribute_value = $mysqli->query("SELECT value_name FROM attributes_values WHERE id IN
+                    (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
+                ")->fetch_assoc();
+                $attributes[$key]['value'] = $attribute_value['value_name'] ?? "значение не указано";
+            }
+            $product['attributes'] = ($attributes);
+        });
+
         echo json_encode([
             'get_products' => $result,
             'description' => 'ответ на получение списка товаров',
@@ -177,6 +195,32 @@ if ($json) {
             "delete_product" => $result,
         ]);
     }
+
+
+    if ($values_from_post_json['service'] == 'get-stock-statuses') {
+        
+        $qs = "SELECT * FROM stock_statuses";
+        try {
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => $th->getMessage()
+            ]);
+            die();
+        }
+        if (!count($result)) {
+            echo json_encode([
+                "success" => false,
+                "error" => "Статусы наличия не заданы"
+            ]);
+        }
+        echo json_encode([
+            "success" => true,
+            "data" => $result
+        ]);
+    }
+
 
     if ($values_from_post_json['service'] == 'hints') {
         require_once __DIR__ . "/api/modules/smart_search.php";
