@@ -153,15 +153,34 @@ if ($json) {
 
     if ($values_from_post_json['service'] == 'get_products') {
         $filterBy = [];
-        $columns = implode(',', $values_from_post_json['columns']);
+        $columns = implode(",", ["id", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
+
         if (isset($values_from_post_json['filterBy'])) {
             foreach ($values_from_post_json['filterBy'] as $key => $value) {
                 $filterBy[] = "$key = '$value'";
             }
         }
+
+
         $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
         $qs = "SELECT $columns from products $where_string";
         $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+
+        array_walk($result, function (&$product) {
+            global $mysqli;
+            $product_category = $product['category'];
+            $product_id = $product['id'];
+            $attributes = $mysqli->query("SELECT id, attribute_name FROM attributes WHERE category = '$product_category'")->fetch_all(MYSQLI_ASSOC);
+            foreach ($attributes as $key => $attribute) {
+                $attribute_id = $attribute['id'];
+                $attribute_value = $mysqli->query("SELECT value_name FROM attributes_values WHERE id IN
+                    (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
+                ")->fetch_assoc();
+                $attributes[$key]['value'] = $attribute_value['value_name'] ?? "значение не указано";
+            }
+            $product['attributes'] = ($attributes);
+        });
+
         echo json_encode([
             'get_products' => $result,
             'description' => 'ответ на получение списка товаров',
@@ -176,6 +195,32 @@ if ($json) {
             "delete_product" => $result,
         ]);
     }
+
+
+    if ($values_from_post_json['service'] == 'get-stock-statuses') {
+        
+        $qs = "SELECT * FROM stock_statuses";
+        try {
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => $th->getMessage()
+            ]);
+            die();
+        }
+        if (!count($result)) {
+            echo json_encode([
+                "success" => false,
+                "error" => "Статусы наличия не заданы"
+            ]);
+        }
+        echo json_encode([
+            "success" => true,
+            "data" => $result
+        ]);
+    }
+
 
     if ($values_from_post_json['service'] == 'hints') {
         require_once __DIR__ . "/api/modules/smart_search.php";
@@ -192,6 +237,179 @@ if ($json) {
         );
         exit();
     }
+
+    if ($values_from_post_json['service'] == 'get-categories') {
+        try {
+            $qs = "SELECT * from categories WHERE is_active = 1";
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $th) {
+            //throw $th;
+            echo json_encode([
+                'success' => false,
+                'error' => "Что-то пошло не так " . $th->getMessage()
+            ]);
+            exit();
+        }
+
+        if (count($result) == 0) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Категории не созданы"
+            ]);
+            exit();
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => $result
+        ]);
+        exit();
+    }
+
+    if ($values_from_post_json['service'] == 'create-attribute') {
+        if (!isset($values_from_post_json['attribute_name'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задано название атрибута',
+            ]);
+            exit();
+        }
+        if (!isset($values_from_post_json['category'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задана категория товаров',
+            ]);
+            exit();
+        }
+
+        $category = $values_from_post_json['category'];
+        $attribute_name = $values_from_post_json['attribute_name'];
+
+        if ($mysqli->query("SELECT * from attributes WHERE category='$category' AND attribute_name='$attribute_name'")->num_rows) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Такой атрибут уже существует',
+            ]);
+            exit();
+        }
+
+        $params = [
+            'category' => $category,
+            'attribute_name' => $attribute_name,
+        ];
+        $cols = implode(",", array_keys($params));
+        $values = implode(",", array_map(function ($value) {
+            return "'$value'";
+        }, array_values($params)));
+
+
+        try {
+            $qs = "INSERT INTO attributes ($cols) VALUES ($values)";
+            $mysqli->query($qs);
+            $new_attribute = $mysqli->insert_id;
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Возможно не всё заполнили " . $th->getMessage(),
+            ]);
+            exit();
+        }
+
+        if ($new_attribute) {
+            echo json_encode([
+                'success' => true,
+                'data' => $new_attribute
+            ]);
+        }
+    }
+    if ($values_from_post_json['service'] == 'create-attribute_value') {
+        if (!isset($values_from_post_json['attribute'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задан атрибут',
+            ]);
+            exit();
+        }
+        if (!isset($values_from_post_json['attribute_value'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не задано значение атрибута',
+            ]);
+            exit();
+        }
+
+        $attribute = $values_from_post_json['attribute'];
+        $value_name = $values_from_post_json['attribute_value'];
+
+        if ($mysqli->query("SELECT * from attributes_values WHERE attribute='$attribute' AND value_name='$value_name'")->num_rows) { // TODO value_name заменить на value
+            echo json_encode([
+                'success' => false,
+                'error' => 'Такой атрибут уже существует',
+            ]);
+            exit();
+        }
+
+        $params = [
+            'attribute' => $attribute,
+            'value_name' => $value_name,
+        ];
+        $cols = implode(",", array_keys($params));
+        $values = implode(",", array_map(function ($value) {
+            return "'$value'";
+        }, array_values($params)));
+
+
+        try {
+            $qs = "INSERT INTO attributes_values ($cols) VALUES ($values)";
+            $mysqli->query($qs);
+            $new_attribute_value = $mysqli->insert_id;
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Возможно не всё заполнили " . $th->getMessage(),
+            ]);
+            exit();
+        }
+
+        if ($new_attribute_value) {
+            echo json_encode([
+                'success' => true,
+                'data' => $new_attribute_value
+            ]);
+        }
+    }
+
+    if ($values_from_post_json['service'] == 'get-attributes') {
+
+        try {
+            $qs = "SELECT * from attributes";
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Что-то пошло не так [get-attributes]" . $th->getMessage()
+            ]);
+            exit();
+        }
+
+        array_walk($result, function (&$attribute) {
+            global $mysqli;
+            $attribute_id = $attribute['id'];
+            $attribute['values'] = $mysqli->query("SELECT * from attributes_values WHERE attribute = $attribute_id")->fetch_all(MYSQLI_ASSOC);
+        });
+
+        if (count($result)) {
+            echo json_encode([
+                'success' => true,
+                'data' => $result
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => "Атрибуты не созданы"
+            ]);
+        }
+    }
 }
 
 if (isset($uri[1]) && $uri[1] == 'api') {
@@ -207,12 +425,24 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         }
 
         $price = $_POST['price'];
+        $category = $_POST['category'];
         $description = $_POST['description'];
-        $characteristics = json_decode($_POST['characteristics']);
+        $attributes = json_decode($_POST['attributes']);
         $files = $_FILES;
 
+        $params = [
+            'product_name' => $product_name,
+            'price' => $price,
+            'description' => $description,
+            'category' => $category,
+        ];
+
         try {
-            $qs = "INSERT INTO products (product_name,price,description) VALUES ('$product_name','$price','$description');";
+            $cols = implode(",", array_keys($params));
+            $values = implode(",", array_map(function ($value) {
+                return "'$value'";
+            }, array_values($params)));
+            $qs = "INSERT INTO products ($cols) VALUES ($values)";
             $mysqli->query($qs);
             $new_product_id = $mysqli->insert_id;
         } catch (\Throwable $th) {
@@ -247,11 +477,110 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             }
         }
 
+        foreach ($attributes as $attribute) {
+            $params = [
+                'attribute' => $attribute->attribute,
+                'attribute_value' => $attribute->value_name,
+                'product' => $new_product_id,
+            ];
+            $cols = implode(",", array_keys($params));
+            $values = implode(",", array_map(function ($value) {
+                return "'$value'";
+            }, array_values($params)));
+            $qs = "INSERT INTO attr_prod_relation ($cols) VALUES ($values)";
+            try {
+                $mysqli->query($qs);
+                $new_category_id = $mysqli->insert_id;
+            } catch (\Throwable $th) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => "Товар создан, но есть проблемы с атрибутами " . $th->getMessage(),
+                ]);
+                exit();
+            }
+        }
+
+        echo json_encode([
+            'success' => true,
+            'product' => [
+                'new_product_id' => $new_product_id,
+            ],
+        ]);
+
+        exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'create-category')) {
+        $category_name = $_POST['category_name'];
+
+        if ($mysqli->query("SELECT * from categories WHERE category_name='$category_name'")->num_rows) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Категория с таким названием уже существует',
+            ]);
+            exit();
+        }
+
+
+        $description = $_POST['description'];
+        // $characteristics = json_decode($_POST['characteristics']);
+        $files = $_FILES;
+
+        $parent = (isset($_POST['parent'])) ? ("'" . $_POST['parent'] . "'") : null;
+
+        $params = [
+            'category_name' => $category_name,
+            'description' => $description,
+        ];
+        if (isset($_POST['parent'])) $params['parent'] = $_POST['parent'];
+
+        $cols = implode(",", array_keys($params));
+        $values = implode(",", array_map(function ($value) {
+            return "'$value'";
+        }, array_values($params)));
+
+        $qs = "INSERT INTO categories ($cols) VALUES ($values)";
+
+        try {
+            $mysqli->query($qs);
+            $new_category_id = $mysqli->insert_id;
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Возможно не всё заполнили " . $th->getMessage(),
+            ]);
+            exit();
+        }
+
+        //TODO добавить в бд возможность создания картинок для категорий
+
+
+        // foreach ($files as $file_name => $file) {
+        //     if ($mysqli->query("SELECT * from products_media WHERE name='$file_name'")->num_rows) { //проверка на наименование файла в бд
+        //         echo json_encode([
+        //             'success' => false,
+        //             'error' => "Файл с именем '$file_name' уже существует",
+        //         ]);
+        //         exit();
+        //     } else {
+        //         $uploaddir = __DIR__ . '/images/';
+        //         $uploadfile = $uploaddir . basename($file['name']);
+        //         if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
+        //             $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$file_name','$new_product_id')";
+        //             $result = $mysqli->query($qs);
+        //         } else {
+        //             echo json_encode([
+        //                 'success' => false,
+        //                 'error' => "Не удалось сохранить '$file_name'. Пожалуйста обратитесь в службу поддержки",
+        //             ]);
+        //         }
+        //     }
+        // }
+
         echo json_encode([
             'success' => true,
             'product' => [
                 // 'name' => $product_name,
-                'new_product_id' => $new_product_id,
+                'new_category_id' => $new_category_id,
                 // 'price' => $price,
                 // 'description' => $description,
                 // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
