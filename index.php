@@ -153,7 +153,7 @@ if ($json) {
 
     if ($values_from_post_json['service'] == 'get_products') {
         $filterBy = [];
-        $columns = implode(",", ["id", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
+        $columns = implode(",", ["id","stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
 
         if (isset($values_from_post_json['filterBy'])) {
             foreach ($values_from_post_json['filterBy'] as $key => $value) {
@@ -428,6 +428,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         $category = $_POST['category'];
         $description = $_POST['description'];
         $attributes = json_decode($_POST['attributes']);
+        $stock_status = $_POST['stock_status'];
         $files = $_FILES;
 
         $params = [
@@ -435,6 +436,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             'price' => $price,
             'description' => $description,
             'category' => $category,
+            'stock_status' => $stock_status,
         ];
 
         try {
