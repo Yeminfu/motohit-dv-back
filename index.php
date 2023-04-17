@@ -23,7 +23,8 @@ $uri = explode('/', $uri);
 
 $config = [
     'per_page_top_products' => 10,
-    "uploaddir" => __DIR__ . '/images/'
+    "uploaddir" => __DIR__ . '/images/',
+    "homeurl" => "http://motohit-dv.ru"
 ];
 
 require __DIR__ . "/api/modules/mysqli.php";
@@ -183,7 +184,8 @@ if ($json) {
 
             $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id AND type='image_full'")->fetch_all(MYSQLI_ASSOC);
             $product['images'] = array_map(function ($image) {
-                return $_SERVER['SERVER_NAME'] . "/images/" . $image['name'];
+                global $config;
+                return $config['homeurl'] . "/images/" . $image['name'];
             }, $images);
         });
 
