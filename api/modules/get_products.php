@@ -7,23 +7,41 @@ if (!isset($values_from_post_json['category'])) {
     ]);
     exit();
 }
+
 $filterBy = [];
+
 $category_name = $values_from_post_json['category'];
 
 $filterBy[] = "category IN (SELECT id FROM categories WHERE category_name = '$category_name')";
 
 $columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
 
+if (isset($values_from_post_json['params'])) {
+    if (isset($values_from_post_json['params']['price_min'])) {
+        $filterBy[] = "price >= " . $values_from_post_json['params']['price_min'];
+    }
+    if (isset($values_from_post_json['params']['price_max'])) {
+        $filterBy[] = "price <= " . $values_from_post_json['params']['price_max'];
+    }
+    // echo json_encode([
+    //     'success' => false,
+    //     'error' => 'Есть цена'
+    // ]);
+    // exit();
+}
+
 
 $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
 
 $qs = "SELECT $columns from products $where_string";
-$products = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+$products = $mysqli->query($qs);//->fetch_all(MYSQLI_ASSOC);
 
 if (!$products) {
     echo json_encode([
         'success' => false,
-        'error' => 'Ошибка получения списка товаров'
+        'error' => 'Ошибка получения списка товаров',
+        'qs' => $qs, //TODO удалить нах
+        'products' => $products, //TODO удалить нах
     ]);
     exit();
 }

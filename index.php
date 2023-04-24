@@ -716,6 +716,6 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'get-products')) {
-        require __DIR__."/api/modules/get_products.php";
+        require __DIR__ . "/api/modules/get_products.php";
     }
 }
