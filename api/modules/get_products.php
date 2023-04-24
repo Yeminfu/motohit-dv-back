@@ -23,11 +23,16 @@ if (isset($values_from_post_json['params'])) {
     if (isset($values_from_post_json['params']['price_max'])) {
         $filterBy[] = "price <= " . $values_from_post_json['params']['price_max'];
     }
-    // echo json_encode([
-    //     'success' => false,
-    //     'error' => 'Есть цена'
-    // ]);
-    // exit();
+
+    $attributes = array_filter($values_from_post_json['params'], function ($k) {
+        return str_contains($k, 'attribute_');
+    }, ARRAY_FILTER_USE_KEY);
+
+    foreach ($attributes as $key => $values) {
+        foreach ($values as $value) {
+            $filterBy[] = "id IN (SELECT product FROM attr_prod_relation WHERE attribute_value = $value)";
+        }
+    }
 }
 
 
