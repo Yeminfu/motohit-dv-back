@@ -1,20 +1,34 @@
 <?php
 
-$filterBy = [];
-$columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
-
-if (isset($values_from_post_json['filterBy'])) {
-    foreach ($values_from_post_json['filterBy'] as $key => $value) {
-        $filterBy[] = "$key = '$value'";
-    }
+if (!isset($values_from_post_json['category'])) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'Нет категории товара'
+    ]);
+    exit();
 }
+$filterBy = [];
+$category_name = $values_from_post_json['category'];
+
+$filterBy[] = "category IN (SELECT id FROM categories WHERE category_name = '$category_name')";
+
+$columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
 
 
 $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
-$qs = "SELECT $columns from products $where_string";
-$result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
 
-array_walk($result, function (&$product) {
+$qs = "SELECT $columns from products $where_string";
+$products = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+
+if (!$products) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'Ошибка получения списка товаров'
+    ]);
+    exit();
+}
+
+array_walk($products, function (&$product) {
     global $mysqli;
     $product_category = $product['category'];
     $product_id = $product['id'];
@@ -41,7 +55,9 @@ array_walk($result, function (&$product) {
 });
 
 echo json_encode([
-    'get_products' => $result,
-    'description' => 'ответ на получение списка товаров',
+    'success' => true,
+    'data' => [
+        'products' => $products
+    ],
 ]);
 die();
