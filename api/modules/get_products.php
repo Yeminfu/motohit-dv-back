@@ -34,14 +34,12 @@ if (isset($values_from_post_json['params'])) {
 $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
 
 $qs = "SELECT $columns from products $where_string";
-$products = $mysqli->query($qs);//->fetch_all(MYSQLI_ASSOC);
+$products = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
 
-if (!$products) {
+if (!is_array($products)) {
     echo json_encode([
         'success' => false,
         'error' => 'Ошибка получения списка товаров',
-        'qs' => $qs, //TODO удалить нах
-        'products' => $products, //TODO удалить нах
     ]);
     exit();
 }
