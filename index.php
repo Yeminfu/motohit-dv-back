@@ -761,12 +761,30 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             'useragent' => $_SERVER['HTTP_USER_AGENT'],
         ];
         $jwt = JWT::encode($payload, $key, 'HS256');
-        $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+
         $mysqli->query("UPDATE users SET token = '$jwt' WHERE id = $userId");
         header("sid: $jwt");
         echo json_encode([
             'success' => true,
+            'data'=>$user,
         ]);
         exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'who-iam')) {
+        if (!isset($values_from_post_json['sid'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не введен sid!'
+            ]);
+            exit();
+        }
+        $sid = $values_from_post_json['sid'];
+        $user = $mysqli->query("SELECT * from users WHERE token='$sid'")->fetch_assoc();
+        if ($user) {
+            echo json_encode([
+                'success' => true,
+                'data' => $user,
+            ]);
+        }
     }
 }
