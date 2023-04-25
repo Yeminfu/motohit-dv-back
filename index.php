@@ -14,6 +14,8 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: *");
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Expose-Headers: SID');
+// Access-Control-Expose-Headers: Access-Token, Uid
 
 $json = file_get_contents('php://input');
 
@@ -38,13 +40,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
 
-$key = 'example_key';
-$payload = [
-    // 'useragent'=>
-    // 'ugafaga' => 'forel navaga',
-    'useragent' => $_SERVER['HTTP_USER_AGENT'],
-    'ip' => $_SERVER['REMOTE_ADDR'],
-];
+
 
 /**
  * IMPORTANT:
@@ -54,8 +50,6 @@ $payload = [
  */
 require __DIR__ . '/vendor/autoload.php';
 
-$jwt = JWT::encode($payload, $key, 'HS256');
-$decoded = JWT::decode($jwt, new Key($key, 'HS256'));
 
 // echo json_encode([
 //     'jwt' => $jwt,
@@ -748,6 +742,31 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/get_products.php";
     }
     if ((isset($uri[2]) && $uri[2] == 'login')) {
-        // require __DIR__ . "/api/modules/get_products.php";
+        $login = $values_from_post_json['login'];
+        $password = $values_from_post_json['password'];
+        $qs = "SELECT * from users WHERE username='$login' AND password = '$password' ";
+        $user = $mysqli->query("SELECT * from users WHERE username='$login' AND password = '$password' ")->fetch_assoc();
+        if (!$user) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Ошибка входа'
+            ]);
+            exit();
+        }
+        $userId = $user['id'];
+        $key = 'шышл мышл';
+        $payload = [
+            'username' => $user['username'],
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'useragent' => $_SERVER['HTTP_USER_AGENT'],
+        ];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+        $mysqli->query("UPDATE users SET token = '$jwt' WHERE id = $userId");
+        header("sid: $jwt");
+        echo json_encode([
+            'success' => true,
+        ]);
+        exit();
     }
 }
