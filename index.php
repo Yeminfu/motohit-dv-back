@@ -741,6 +741,9 @@ if (isset($uri[1]) && $uri[1] == 'api') {
     if ((isset($uri[2]) && $uri[2] == 'get-products')) {
         require __DIR__ . "/api/modules/get_products.php";
     }
+    if ((isset($uri[2]) && $uri[2] == 'get-admin-products')) {
+        require __DIR__ . "/api/modules/get_admin_products.php";
+    }
     if ((isset($uri[2]) && $uri[2] == 'login')) {
         $login = $values_from_post_json['login'];
         $password = $values_from_post_json['password'];
