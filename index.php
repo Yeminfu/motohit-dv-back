@@ -34,6 +34,35 @@ if ($mysqli->connect_errno) {
 }
 
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+
+$key = 'example_key';
+$payload = [
+    // 'useragent'=>
+    // 'ugafaga' => 'forel navaga',
+    'useragent' => $_SERVER['HTTP_USER_AGENT'],
+    'ip' => $_SERVER['REMOTE_ADDR'],
+];
+
+/**
+ * IMPORTANT:
+ * You must specify supported algorithms for your application. See
+ * https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40
+ * for a list of spec-compliant algorithms.
+ */
+require __DIR__ . '/vendor/autoload.php';
+
+$jwt = JWT::encode($payload, $key, 'HS256');
+$decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+
+// echo json_encode([
+//     'jwt' => $jwt,
+//     '$decoded' => $decoded,
+// ]);
+
+// exit();
 // sleep(1 / 2);
 // time_nanosleep(0, 500000000);
 
@@ -717,5 +746,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
     }
     if ((isset($uri[2]) && $uri[2] == 'get-products')) {
         require __DIR__ . "/api/modules/get_products.php";
+    }
+    if ((isset($uri[2]) && $uri[2] == 'login')) {
+        // require __DIR__ . "/api/modules/get_products.php";
     }
 }
