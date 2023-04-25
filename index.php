@@ -17,12 +17,13 @@ header('Access-Control-Allow-Credentials: true');
 
 $json = file_get_contents('php://input');
 
-
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = explode('/', $uri);
 
 $config = [
-    'per_page_top_products' => 10
+    'per_page_top_products' => 10,
+    "uploaddir" => __DIR__ . '/images/',
+    "homeurl" => "http://motohit-dv.ru"
 ];
 
 require __DIR__ . "/api/modules/mysqli.php";
@@ -33,8 +34,29 @@ if ($mysqli->connect_errno) {
 }
 
 
-if ($json) {
-    $values_from_post_json = json_decode($json, true);
+// sleep(1 / 2);
+// time_nanosleep(0, 500000000);
+
+$values_from_post_json = json_decode($json, true);
+
+// sleep(1);
+
+// echo json_encode(
+//     [
+//         'query string' => $qs->get_query_string(),
+//         "result" => $mysqli->query(
+//             strval($qs->get_query_string())
+//         )->fetch_all(MYSQLI_ASSOC)
+//     ]
+// );
+
+// echo json_encode(
+//     (new OrderRepository(1231))->load()
+// );
+// exit();
+
+
+if ($json && isset($values_from_post_json['service'])) {
 
     if ($values_from_post_json['service'] == 'get_users') {
         $filterBy = [];
@@ -153,7 +175,7 @@ if ($json) {
 
     if ($values_from_post_json['service'] == 'get_products') {
         $filterBy = [];
-        $columns = implode(",", ["id","stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
+        $columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
 
         if (isset($values_from_post_json['filterBy'])) {
             foreach ($values_from_post_json['filterBy'] as $key => $value) {
@@ -170,15 +192,26 @@ if ($json) {
             global $mysqli;
             $product_category = $product['category'];
             $product_id = $product['id'];
+
             $attributes = $mysqli->query("SELECT id, attribute_name FROM attributes WHERE category = '$product_category'")->fetch_all(MYSQLI_ASSOC);
             foreach ($attributes as $key => $attribute) {
                 $attribute_id = $attribute['id'];
                 $attribute_value = $mysqli->query("SELECT value_name FROM attributes_values WHERE id IN
                     (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
                 ")->fetch_assoc();
-                $attributes[$key]['value'] = $attribute_value['value_name'] ?? "значение не указано";
+                $attributes[$key]['value'] = $attribute_value['value_name'] ?? "-";
             }
             $product['attributes'] = ($attributes);
+
+            $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id AND type='image_full'")->fetch_all(MYSQLI_ASSOC);
+            $product['images'] = array_map(function ($image) {
+                global $config;
+                return $config['homeurl'] . "/images/" . $image['name'];
+            }, $images);
+
+            $product_status_id = $product['stock_status'];
+            $stock_status = $mysqli->query("SELECT * FROM stock_statuses WHERE id = $product_status_id")->fetch_assoc();
+            $product['stock_status'] = $stock_status['status_name'];
         });
 
         echo json_encode([
@@ -187,18 +220,51 @@ if ($json) {
         ]);
     }
 
-    if ($values_from_post_json['service'] == 'delete_product') {
-        $productId = $values_from_post_json['productId'];
-        $qs = "UPDATE products SET is_active = 0 WHERE id = $productId";
-        $result = $mysqli->query($qs);
-        echo json_encode([
-            "delete_product" => $result,
-        ]);
+    if ($values_from_post_json['service'] == 'get-product') {
+        $product_name = $values_from_post_json['product'];
+
+        $product = $mysqli->query("SELECT * FROM products WHERE product_name = '$product_name'")->fetch_assoc();
+        $product_id = $product['id'];
+
+        $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
+        $product['images'] = array_map(function ($image) {
+            global $config;
+            return $config['homeurl'] . "/images/" . $image['name'];
+        }, $images);
+
+        $product_category = $product['category'];
+        $attributes = $mysqli->query("SELECT id, attribute_name FROM attributes WHERE category = '$product_category'")->fetch_all(MYSQLI_ASSOC);
+        foreach ($attributes as $key => $attribute) {
+            $attribute_id = $attribute['id'];
+            $attribute_value = $mysqli->query("SELECT value_name FROM attributes_values WHERE id IN
+                    (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
+                ")->fetch_assoc();
+            $attributes[$key]['value'] = $attribute_value['value_name'] ?? "-";
+        }
+        $product['attributes'] = $attributes;
+
+        if ($product) {
+            echo json_encode([
+                'success' => true,
+                'data' => $product,
+            ]);
+        }
+
+        exit();
     }
+
+    if (isset($values_from_post_json['service']))
+        if ($values_from_post_json['service'] == 'delete_product') {
+            $productId = $values_from_post_json['productId'];
+            $qs = "UPDATE products SET is_active = 0 WHERE id = $productId";
+            $result = $mysqli->query($qs);
+            echo json_encode([
+                "delete_product" => $result,
+            ]);
+        }
 
 
     if ($values_from_post_json['service'] == 'get-stock-statuses') {
-        
         $qs = "SELECT * FROM stock_statuses";
         try {
             $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
@@ -457,23 +523,26 @@ if (isset($uri[1]) && $uri[1] == 'api') {
 
 
 
-        foreach ($files as $file_name => $file) {
-            if ($mysqli->query("SELECT * from products_media WHERE name='$file_name'")->num_rows) { //проверка на наименование файла в бд
+        foreach ($files as $not_named_variable_name => $file) {
+
+            $fileName = basename($file['name']);
+            if ($mysqli->query("SELECT * from products_media WHERE name='$fileName'")->num_rows) { //проверка на наименование файла в бд
                 echo json_encode([
                     'success' => false,
-                    'error' => "Файл с именем '$file_name' уже существует",
+                    'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
                 ]);
                 exit();
             } else {
-                $uploaddir = __DIR__ . '/images/';
-                $uploadfile = $uploaddir . basename($file['name']);
+
+                $uploadfile = $config['uploaddir'] . basename($file['name']);
                 if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
-                    $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$file_name','$new_product_id')";
+
+                    $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$fileName','$new_product_id')";
                     $result = $mysqli->query($qs);
                 } else {
                     echo json_encode([
                         'success' => false,
-                        'error' => "Не удалось сохранить '$file_name'. Пожалуйста обратитесь в службу поддержки",
+                        'error' => "Не удалось сохранить '$fileName'. Пожалуйста обратитесь в службу поддержки",
                     ]);
                 }
             }
@@ -509,6 +578,61 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             ],
         ]);
 
+        exit();
+    }
+
+    if ((isset($uri[2]) && $uri[2] == 'last-products')) {
+
+        $total = $mysqli->query("SELECT COUNT(*) as total from products WHERE is_active=1")->fetch_assoc()['total'];
+
+        $page = $values_from_post_json['page'] - 1;
+        $per_page = $values_from_post_json['per_page'];
+        $pages = ceil($total / $per_page);
+
+        $offset = $page * $per_page;
+
+        $qs = "SELECT * from products ORDER BY id DESC LIMIT $offset, $per_page";
+
+        $products = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+
+        array_walk($products, function (&$product) {
+            global $mysqli;
+            $product_category = $product['category'];
+            $product_id = $product['id'];
+            $attributes = $mysqli->query("SELECT id, attribute_name FROM attributes WHERE category = '$product_category'")->fetch_all(MYSQLI_ASSOC);
+            foreach ($attributes as $key => $attribute) {
+                $attribute_id = $attribute['id'];
+                $attribute_value = $mysqli->query("SELECT value_name FROM attributes_values WHERE id IN
+                    (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
+                ")->fetch_assoc();
+                $attributes[$key]['value'] = $attribute_value['value_name'] ?? "-";
+            }
+            $product['attributes'] = ($attributes);
+
+            $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id AND type='image_full'")->fetch_all(MYSQLI_ASSOC);
+            $product['images'] = array_map(function ($image) {
+                global $config;
+                return $config['homeurl'] . "/images/" . $image['name'];
+            }, $images);
+
+            $product_status_id = $product['stock_status'];
+            $stock_status = $mysqli->query("SELECT * FROM stock_statuses WHERE id = $product_status_id")->fetch_assoc();
+            $product['stock_status'] = $stock_status['status_name'];
+        });
+
+        echo json_encode(
+            [
+                'success' => true,
+                'data' => [
+                    'total' => $total,
+                    // 'qs' => $qs,
+                    'products' => $products,
+                    'pages' => $pages,
+                    // 'config' => $config,
+                    // '$values_from_post_json' => $values_from_post_json,
+                ]
+            ]
+        );
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'create-category')) {
@@ -590,5 +714,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         ]);
 
         exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'get-products')) {
+        require __DIR__ . "/api/modules/get_products.php";
     }
 }
