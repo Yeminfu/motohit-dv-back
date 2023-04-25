@@ -3,36 +3,26 @@
 
 $filterBy = [];
 
-if (isset($values_from_post_json['category'])) {
-    $category_name = $values_from_post_json['category'];
-    $filterBy[] = "category IN (SELECT id FROM categories WHERE category_name = '$category_name')";
-}
-
-
 $columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
 
 if (isset($values_from_post_json['params'])) {
-    if (isset($values_from_post_json['params']['price_min'])) {
-        $filterBy[] = "price >= " . $values_from_post_json['params']['price_min'];
-    }
-    if (isset($values_from_post_json['params']['price_max'])) {
-        $filterBy[] = "price <= " . $values_from_post_json['params']['price_max'];
-    }
-
-    $attributes = array_filter($values_from_post_json['params'], function ($k) {
-        return str_contains($k, 'attribute_');
-    }, ARRAY_FILTER_USE_KEY);
-
-    foreach ($attributes as $key => $values) {
-        foreach ($values as $value) {
-            $filterBy[] = "id IN (SELECT product FROM attr_prod_relation WHERE attribute_value = $value)";
-        }
+    if (isset($values_from_post_json['params']['category'])) {
+        $category = $values_from_post_json['params']['category'];
+        $filterBy[] = "category = $category";
     }
 }
 
 $where_string = count($filterBy) > 0 ? " WHERE " . implode(" AND ", $filterBy) : "";
 
-$qs = "SELECT $columns from products $where_string";
+$total = 0;
+
+$page = $values_from_post_json['page'];
+
+$per_page = $values_from_post_json['per_page'];
+$offset = ($page - 1) * $per_page;
+
+$qs = "SELECT $columns from products $where_string LIMIT $offset, $per_page";
+
 $products = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
 
 if (!is_array($products)) {
@@ -43,9 +33,6 @@ if (!is_array($products)) {
     exit();
 }
 
-$total = 0;
-
-$per_page = $values_from_post_json['per_page'];
 
 $total = $mysqli->query("SELECT COUNT(*) as total from products $where_string")->fetch_assoc()['total'];
 $pages = ceil($total / $per_page);
