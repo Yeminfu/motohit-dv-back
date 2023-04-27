@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 header('Content-type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: *");
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: *');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Expose-Headers: SID');
 // Access-Control-Expose-Headers: Access-Token, Uid
@@ -769,7 +769,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         header("sid: $jwt");
         echo json_encode([
             'success' => true,
-            'data'=>$user,
+            'data' => $user,
         ]);
         exit();
     }
@@ -789,5 +789,9 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 'data' => $user,
             ]);
         }
+    }
+    if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-product')) {
+        require __DIR__ . "/api/modules/admin_data_for_edit_product/admin_data_for_edit_product.php";
+        exit();
     }
 }
