@@ -6,10 +6,14 @@ function get_product($product_name)
     $product = $mysqli->query("SELECT * FROM products WHERE product_name = '$product_name'")->fetch_assoc();
     $product_id = $product['id'];
 
-    $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
+    $images = $mysqli->query("SELECT id, name FROM `products_media` WHERE product_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
+
     $product['images'] = array_map(function ($image) {
         global $config;
-        return $config['homeurl'] . "/images/" . $image['name'];
+        return [
+            'id' => $image['id'],
+            'src' => $config['homeurl'] . "/images/" . $image['name']
+        ];
     }, $images);
 
     $product_category = $product['category'];
