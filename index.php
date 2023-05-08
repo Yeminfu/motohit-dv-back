@@ -24,7 +24,7 @@ $uri = explode('/', $uri);
 
 $config = [
     'per_page_top_products' => 10,
-    "uploaddir" => __DIR__ . '/images/',
+    "uploaddir" => __DIR__ . '/images',
     "homeurl" => "http://motohit-dv.ru"
 ];
 
@@ -792,6 +792,10 @@ if (isset($uri[1]) && $uri[1] == 'api') {
     }
     if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-product')) {
         require __DIR__ . "/api/modules/admin_data_for_edit_product/admin_data_for_edit_product.php";
+        exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'edit-product')) {
+        require __DIR__ . "/api/modules/edit_product/edit_product.php";
         exit();
     }
 }
