@@ -798,4 +798,11 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/edit_product/edit_product.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'get-all-admin-attributes')) {
+        require __DIR__ . "/api/modules/admin-attributes/get-all-admin-attributes/get-all-admin-attributes.php";
+        exit();
+    }
 }
+
+// /var/www/html/motohit-dv/api/modules/admin-attributes/get-all-admin-attributes/get-all-admin-attributes.php
+// /var/www/html/motohit-dv/api/modules/admin-attributes/get-all-admin-attributes/editget-all-admin-attributes_product.php

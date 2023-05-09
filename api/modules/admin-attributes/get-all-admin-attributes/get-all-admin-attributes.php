@@ -1,0 +1,1 @@
+ echo 'get-all-admin-attributesget-all-admin-attributes';
