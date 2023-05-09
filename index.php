@@ -12,8 +12,10 @@ error_reporting(E_ALL);
 header('Content-type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: *");
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: *');
 header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Expose-Headers: SID');
+// Access-Control-Expose-Headers: Access-Token, Uid
 
 $json = file_get_contents('php://input');
 
@@ -22,7 +24,7 @@ $uri = explode('/', $uri);
 
 $config = [
     'per_page_top_products' => 10,
-    "uploaddir" => __DIR__ . '/images/',
+    "uploaddir" => __DIR__ . '/images',
     "homeurl" => "http://motohit-dv.ru"
 ];
 
@@ -34,6 +36,27 @@ if ($mysqli->connect_errno) {
 }
 
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+
+
+
+/**
+ * IMPORTANT:
+ * You must specify supported algorithms for your application. See
+ * https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40
+ * for a list of spec-compliant algorithms.
+ */
+require __DIR__ . '/vendor/autoload.php';
+
+
+// echo json_encode([
+//     'jwt' => $jwt,
+//     '$decoded' => $decoded,
+// ]);
+
+// exit();
 // sleep(1 / 2);
 // time_nanosleep(0, 500000000);
 
@@ -717,5 +740,62 @@ if (isset($uri[1]) && $uri[1] == 'api') {
     }
     if ((isset($uri[2]) && $uri[2] == 'get-products')) {
         require __DIR__ . "/api/modules/get_products.php";
+    }
+    if ((isset($uri[2]) && $uri[2] == 'get-admin-products')) {
+        require __DIR__ . "/api/modules/get_admin_products.php";
+    }
+    if ((isset($uri[2]) && $uri[2] == 'login')) {
+        $login = $values_from_post_json['login'];
+        $password = $values_from_post_json['password'];
+        $qs = "SELECT * from users WHERE username='$login' AND password = '$password' ";
+        $user = $mysqli->query("SELECT * from users WHERE username='$login' AND password = '$password' ")->fetch_assoc();
+        if (!$user) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Ошибка входа'
+            ]);
+            exit();
+        }
+        $userId = $user['id'];
+        $key = 'шышл мышл';
+        $payload = [
+            'username' => $user['username'],
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'useragent' => $_SERVER['HTTP_USER_AGENT'],
+        ];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+
+        $mysqli->query("UPDATE users SET token = '$jwt' WHERE id = $userId");
+        header("sid: $jwt");
+        echo json_encode([
+            'success' => true,
+            'data' => $user,
+        ]);
+        exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'who-iam')) {
+        if (!isset($values_from_post_json['sid'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Не введен sid!'
+            ]);
+            exit();
+        }
+        $sid = $values_from_post_json['sid'];
+        $user = $mysqli->query("SELECT * from users WHERE token='$sid'")->fetch_assoc();
+        if ($user) {
+            echo json_encode([
+                'success' => true,
+                'data' => $user,
+            ]);
+        }
+    }
+    if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-product')) {
+        require __DIR__ . "/api/modules/admin_data_for_edit_product/admin_data_for_edit_product.php";
+        exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'edit-product')) {
+        require __DIR__ . "/api/modules/edit_product/edit_product.php";
+        exit();
     }
 }
