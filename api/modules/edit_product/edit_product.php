@@ -43,6 +43,18 @@ foreach ($_FILES as $not_named_variable_name => $file) {
     }
 }
 
+if (isset($_POST['attributes'])) {
+    foreach ($_POST['attributes'] as $attribute_id => $attribute_value_id) {
+        $qs = "SELECT * FROM attr_prod_relation WHERE attribute = $attribute_id AND attribute_value = $attribute_value_id AND product = $product_id";
+        $res = $mysqli->query($qs)->fetch_assoc();
+        if ($res) {
+            $mysqli->query("UPDATE attr_prod_relation SET attribute_value = $attribute_value_id WHERE id = " . $res['id']);
+        } else {
+            $mysqli->query("INSERT INTO attr_prod_relation (attribute, attribute_value, product) VALUES ($attribute_id, $attribute_value_id, $product_id)");
+        }
+    }
+}
+
 echo json_encode([
-    'newImages' => $_FILES,
+    'success'=>true,
 ]);
