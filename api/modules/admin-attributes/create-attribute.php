@@ -9,13 +9,13 @@ if ($created_attribute) {
     echo json_encode([
         'success' => false,
         'error' => "У этой категории уже создан атрибут с таким названием"
-    ]);
+    ],JSON_UNESCAPED_UNICODE);
     exit();
 } else {
     $res = $mysqli->query("INSERT INTO attributes (attribute_name, category) VALUES ('$attribute', $category)");
     if ($res) {
         echo json_encode([
             'success' => true,
-        ]);
+        ],JSON_UNESCAPED_UNICODE);
     }
 }

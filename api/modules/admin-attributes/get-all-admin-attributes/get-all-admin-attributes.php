@@ -20,7 +20,7 @@ foreach ($categories as $category_index => $category) {
 echo json_encode([
     'success' => true,
     'data' => $categories,
-]);
+], JSON_UNESCAPED_UNICODE);
 
 // $categories = $mysqli->query("SELECT value_name FROM attributes_values WHERE id IN
 // (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)

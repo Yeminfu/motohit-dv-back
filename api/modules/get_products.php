@@ -4,7 +4,7 @@ if (!isset($values_from_post_json['category'])) {
     echo json_encode([
         'success' => false,
         'error' => 'Нет категории товара'
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
@@ -45,7 +45,7 @@ if (!is_array($products)) {
     echo json_encode([
         'success' => false,
         'error' => 'Ошибка получения списка товаров',
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
@@ -80,5 +80,5 @@ echo json_encode([
     'data' => [
         'products' => $products
     ],
-]);
+], JSON_UNESCAPED_UNICODE);
 die();

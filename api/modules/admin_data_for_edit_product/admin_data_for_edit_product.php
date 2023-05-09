@@ -22,5 +22,5 @@ if ($product) {
             'categories' => $categories,
             'stock_statuses' => $stock_statuses,
         ],
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 }

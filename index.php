@@ -98,7 +98,7 @@ if ($json && isset($values_from_post_json['service'])) {
                 'success' => true,
                 'data' => $result,
                 'description' => 'ответ на запрос списка пользователей',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         } catch (\Throwable $th) {
             //throw $th;
@@ -116,12 +116,12 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => true,
                 'data' => "всё хорошо",
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         } catch (Exception $e) {
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage(),
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             // echo 'Caught exception: ',  $e->getMessage(), "\n";
         }
         // if ($mysqli->query($qs)) {
@@ -134,14 +134,14 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => "Вы не ввели логин"
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
         if (!isset($values_from_post_json['password'])) {
             echo json_encode([
                 'success' => false,
                 'error' => "Вы не ввели пароль"
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
         $username = $values_from_post_json['username'];
@@ -154,7 +154,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Нет такого пользователя',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -162,14 +162,14 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => true,
                 'data' => $result,
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
         echo json_encode([
             'success' => false,
             'error' => 'Непредвиденная ошибка',
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
     if ($values_from_post_json['service'] == 'delete_user') {
@@ -178,7 +178,7 @@ if ($json && isset($values_from_post_json['service'])) {
         $result = $mysqli->query($qs);
         echo json_encode([
             "delete_user" => $result,
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     if ($values_from_post_json['service'] == 'edit_users') {
@@ -193,7 +193,7 @@ if ($json && isset($values_from_post_json['service'])) {
         echo json_encode([
             "edit_users" => $result,
             "description" => "Обновляем данные пользователя"
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     if ($values_from_post_json['service'] == 'get_products') {
@@ -240,7 +240,7 @@ if ($json && isset($values_from_post_json['service'])) {
         echo json_encode([
             'get_products' => $result,
             'description' => 'ответ на получение списка товаров',
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     if ($values_from_post_json['service'] == 'get-product') {
@@ -270,7 +270,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => true,
                 'data' => $product,
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
 
         exit();
@@ -283,7 +283,7 @@ if ($json && isset($values_from_post_json['service'])) {
             $result = $mysqli->query($qs);
             echo json_encode([
                 "delete_product" => $result,
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
 
 
@@ -295,19 +295,19 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => $th->getMessage()
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             die();
         }
         if (!count($result)) {
             echo json_encode([
                 "success" => false,
                 "error" => "Статусы наличия не заданы"
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
         echo json_encode([
             "success" => true,
             "data" => $result
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     }
 
 
@@ -318,11 +318,12 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 "success" => false,
                 "error" => "Нет входящей строки"
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
         echo json_encode(
-            smart_search($text)
+            smart_search($text),
+            JSON_UNESCAPED_UNICODE
         );
         exit();
     }
@@ -333,10 +334,13 @@ if ($json && isset($values_from_post_json['service'])) {
             $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
         } catch (\Throwable $th) {
             //throw $th;
-            echo json_encode([
-                'success' => false,
-                'error' => "Что-то пошло не так " . $th->getMessage()
-            ]);
+            echo json_encode(
+                [
+                    'success' => false,
+                    'error' => "Что-то пошло не так " . $th->getMessage()
+                ],
+                JSON_UNESCAPED_UNICODE
+            );
             exit();
         }
 
@@ -344,14 +348,14 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => "Категории не созданы"
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
         echo json_encode([
             'success' => true,
             'data' => $result
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
 
@@ -360,14 +364,14 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Не задано название атрибута',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
         if (!isset($values_from_post_json['category'])) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Не задана категория товаров',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -378,7 +382,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Такой атрибут уже существует',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -400,7 +404,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => "Возможно не всё заполнили " . $th->getMessage(),
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -408,7 +412,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => true,
                 'data' => $new_attribute
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
     }
     if ($values_from_post_json['service'] == 'create-attribute_value') {
@@ -416,14 +420,14 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Не задан атрибут',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
         if (!isset($values_from_post_json['attribute_value'])) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Не задано значение атрибута',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -434,7 +438,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Такой атрибут уже существует',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -456,7 +460,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => "Возможно не всё заполнили " . $th->getMessage(),
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -464,7 +468,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => true,
                 'data' => $new_attribute_value
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
     }
 
@@ -477,7 +481,7 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => false,
                 'error' => "Что-то пошло не так [get-attributes]" . $th->getMessage()
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -491,12 +495,12 @@ if ($json && isset($values_from_post_json['service'])) {
             echo json_encode([
                 'success' => true,
                 'data' => $result
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         } else {
             echo json_encode([
                 'success' => false,
                 'error' => "Атрибуты не созданы"
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
     }
 }
@@ -509,7 +513,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Товар с таким названием уже существует',
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -540,7 +544,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => "Возможно не всё заполнили " . $th->getMessage(),
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -553,7 +557,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 echo json_encode([
                     'success' => false,
                     'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
-                ]);
+                ],JSON_UNESCAPED_UNICODE);
                 exit();
             } else {
 
@@ -566,7 +570,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                     echo json_encode([
                         'success' => false,
                         'error' => "Не удалось сохранить '$fileName'. Пожалуйста обратитесь в службу поддержки",
-                    ]);
+                    ],JSON_UNESCAPED_UNICODE);
                 }
             }
         }
@@ -589,7 +593,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 echo json_encode([
                     'success' => false,
                     'error' => "Товар создан, но есть проблемы с атрибутами " . $th->getMessage(),
-                ]);
+                ],JSON_UNESCAPED_UNICODE);
                 exit();
             }
         }
@@ -599,7 +603,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             'product' => [
                 'new_product_id' => $new_product_id,
             ],
-        ]);
+        ],JSON_UNESCAPED_UNICODE);
 
         exit();
     }
@@ -654,7 +658,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                     // 'config' => $config,
                     // '$values_from_post_json' => $values_from_post_json,
                 ]
-            ]
+            ],JSON_UNESCAPED_UNICODE
         );
         exit();
     }
@@ -665,7 +669,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Категория с таким названием уже существует',
-            ]);
+            ],JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -696,7 +700,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => "Возможно не всё заполнили " . $th->getMessage(),
-            ]);
+            ],JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -734,7 +738,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 // 'description' => $description,
                 // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
             ],
-        ]);
+        ],JSON_UNESCAPED_UNICODE);
 
         exit();
     }
@@ -753,7 +757,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Ошибка входа'
-            ]);
+            ],JSON_UNESCAPED_UNICODE);
             exit();
         }
         $userId = $user['id'];
@@ -770,7 +774,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         echo json_encode([
             'success' => true,
             'data' => $user,
-        ]);
+        ],JSON_UNESCAPED_UNICODE);
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'who-iam')) {
@@ -778,7 +782,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Не введен sid!'
-            ]);
+            ],JSON_UNESCAPED_UNICODE);
             exit();
         }
         $sid = $values_from_post_json['sid'];
@@ -787,12 +791,12 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => true,
                 'data' => $user,
-            ]);
+            ],JSON_UNESCAPED_UNICODE);
         } else {
             echo json_encode([
                 'success' => false,
                 'error' => "Отказано в доступе",
-            ]);
+            ],JSON_UNESCAPED_UNICODE);
         }
     }
     if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-product')) {

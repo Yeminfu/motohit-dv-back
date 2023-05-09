@@ -10,7 +10,7 @@ function get_attributes($category)
         echo json_encode([
             'success' => false,
             'error' => "Что-то пошло не так [get-attributes]" . $th->getMessage()
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
 

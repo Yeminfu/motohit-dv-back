@@ -7,7 +7,7 @@ if (!$delete_relations_from_products_result) {
     echo json_encode([
         'success' => false,
         'error' => "Error delete from attr_prod_relation"
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
@@ -16,7 +16,7 @@ if (!$delete_atribute_values_result) {
     echo json_encode([
         'success' => false,
         'error' => "Error delete from attributes_values"
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
@@ -25,7 +25,7 @@ if (!$delete_atribute_result) {
     echo json_encode([
         'success' => false,
         'error' => "Error delete from attributes"
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
@@ -39,4 +39,4 @@ echo json_encode([
         'delete_atribute_values_result' => $delete_atribute_values_result,
         'delete_atribute_result' => $delete_atribute_result,
     ]
-]);
+], JSON_UNESCAPED_UNICODE);

@@ -10,7 +10,7 @@ function get_categories()
         echo json_encode([
             'success' => false,
             'error' => "Что-то пошло не так " . $th->getMessage()
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
     return $result;

@@ -29,7 +29,7 @@ if (!is_array($products)) {
     echo json_encode([
         'success' => false,
         'error' => 'Ошибка получения списка товаров',
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
@@ -45,5 +45,5 @@ echo json_encode([
         'total' => intval($total),
         'pages' => $pages,
     ],
-]);
+], JSON_UNESCAPED_UNICODE);
 die();

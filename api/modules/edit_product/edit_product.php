@@ -26,7 +26,7 @@ foreach ($_FILES as $not_named_variable_name => $file) {
         echo json_encode([
             'success' => false,
             'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     } else {
         $uploadfile = $config['uploaddir'] . "/" . basename($file['name']);
@@ -38,7 +38,7 @@ foreach ($_FILES as $not_named_variable_name => $file) {
             echo json_encode([
                 'success' => false,
                 'error' => "Не удалось сохранить '$fileName'. Пожалуйста обратитесь в службу поддержки",
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
     }
 }
@@ -56,5 +56,5 @@ if (isset($_POST['attributes'])) {
 }
 
 echo json_encode([
-    'success'=>true,
+    'success' => true,
 ]);
