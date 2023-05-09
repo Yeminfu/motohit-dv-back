@@ -1,10 +1,10 @@
 <?php
 
-function get_attributes()
+function get_attributes($category)
 {
     global $mysqli;
     try {
-        $qs = "SELECT * from attributes";
+        $qs = "SELECT * from attributes WHERE category = $category";
         $attributes = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
     } catch (\Throwable $th) {
         echo json_encode([
