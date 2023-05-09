@@ -29,6 +29,6 @@ function get_product($product_name)
         $attributes[$key]['value_id'] = $attribute_value['value_id'] ?? "-";
         // $attributes[$key]['value'] = $attribute_value['value_name'] ?? "-";
     }
-    $product['attributes'] = $qsssssss;
+    $product['attributes'] = $attributes;
     return $product;
 }
