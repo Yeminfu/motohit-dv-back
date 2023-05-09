@@ -807,4 +807,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/admin-attributes/create-attribute.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'delete-attribute')) {
+        require __DIR__ . "/api/modules/admin-attributes/delete-attribute.php";
+        exit();
+    }
 }
