@@ -548,8 +548,6 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             exit();
         }
 
-
-
         foreach ($files as $not_named_variable_name => $file) {
 
             $fileName = basename($file['name']);
@@ -557,11 +555,11 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 echo json_encode([
                     'success' => false,
                     'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
-                ],JSON_UNESCAPED_UNICODE);
+                ], JSON_UNESCAPED_UNICODE);
                 exit();
             } else {
 
-                $uploadfile = $config['uploaddir'] . basename($file['name']);
+                $uploadfile = $config['uploaddir'] . '/' . basename($file['name']);
                 if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
 
                     $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$fileName','$new_product_id')";
@@ -570,7 +568,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                     echo json_encode([
                         'success' => false,
                         'error' => "Не удалось сохранить '$fileName'. Пожалуйста обратитесь в службу поддержки",
-                    ],JSON_UNESCAPED_UNICODE);
+                    ], JSON_UNESCAPED_UNICODE);
                 }
             }
         }
@@ -593,7 +591,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 echo json_encode([
                     'success' => false,
                     'error' => "Товар создан, но есть проблемы с атрибутами " . $th->getMessage(),
-                ],JSON_UNESCAPED_UNICODE);
+                ], JSON_UNESCAPED_UNICODE);
                 exit();
             }
         }
@@ -603,7 +601,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             'product' => [
                 'new_product_id' => $new_product_id,
             ],
-        ],JSON_UNESCAPED_UNICODE);
+        ], JSON_UNESCAPED_UNICODE);
 
         exit();
     }
@@ -658,7 +656,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                     // 'config' => $config,
                     // '$values_from_post_json' => $values_from_post_json,
                 ]
-            ],JSON_UNESCAPED_UNICODE
+            ],
+            JSON_UNESCAPED_UNICODE
         );
         exit();
     }
@@ -669,7 +668,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Категория с таким названием уже существует',
-            ],JSON_UNESCAPED_UNICODE);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -700,7 +699,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => "Возможно не всё заполнили " . $th->getMessage(),
-            ],JSON_UNESCAPED_UNICODE);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
 
@@ -738,7 +737,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 // 'description' => $description,
                 // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
             ],
-        ],JSON_UNESCAPED_UNICODE);
+        ], JSON_UNESCAPED_UNICODE);
 
         exit();
     }
@@ -757,7 +756,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Ошибка входа'
-            ],JSON_UNESCAPED_UNICODE);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
         $userId = $user['id'];
@@ -774,7 +773,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         echo json_encode([
             'success' => true,
             'data' => $user,
-        ],JSON_UNESCAPED_UNICODE);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'who-iam')) {
@@ -782,7 +781,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Не введен sid!'
-            ],JSON_UNESCAPED_UNICODE);
+            ], JSON_UNESCAPED_UNICODE);
             exit();
         }
         $sid = $values_from_post_json['sid'];
@@ -791,12 +790,12 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             echo json_encode([
                 'success' => true,
                 'data' => $user,
-            ],JSON_UNESCAPED_UNICODE);
+            ], JSON_UNESCAPED_UNICODE);
         } else {
             echo json_encode([
                 'success' => false,
                 'error' => "Отказано в доступе",
-            ],JSON_UNESCAPED_UNICODE);
+            ], JSON_UNESCAPED_UNICODE);
         }
     }
     if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-product')) {
