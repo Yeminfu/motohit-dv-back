@@ -815,4 +815,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/admin-attributes/create-attribute-value.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'delete-attribute-value')) {
+        require __DIR__ . "/api/modules/admin-attributes/delete-attribute-value.php";
+        exit();
+    }
 }
