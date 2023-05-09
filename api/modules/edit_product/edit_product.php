@@ -19,3 +19,30 @@ foreach ($diff as $key => $image_id) {
     $deleteRes = $mysqli->query("DELETE FROM products_media WHERE id = $image_id");
     $path_to_file = $config['uploaddir'] . "/" . $image_name['name'];
 }
+
+foreach ($_FILES as $not_named_variable_name => $file) {
+    $fileName = basename($file['name']);
+    if ($mysqli->query("SELECT * from products_media WHERE name='$fileName'")->num_rows) { //проверка на наименование файла в бд
+        echo json_encode([
+            'success' => false,
+            'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
+        ]);
+        exit();
+    } else {
+        $uploadfile = $config['uploaddir'] . "/" . basename($file['name']);
+        if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
+
+            $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$fileName','$product_id')";
+            $result = $mysqli->query($qs);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => "Не удалось сохранить '$fileName'. Пожалуйста обратитесь в службу поддержки",
+            ]);
+        }
+    }
+}
+
+echo json_encode([
+    'newImages' => $_FILES,
+]);
