@@ -788,6 +788,11 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 'success' => true,
                 'data' => $user,
             ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => "Отказано в доступе",
+            ]);
         }
     }
     if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-product')) {

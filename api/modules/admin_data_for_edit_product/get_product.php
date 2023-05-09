@@ -20,13 +20,15 @@ function get_product($product_name)
     $attributes = $mysqli->query("SELECT id, attribute_name FROM attributes WHERE category = '$product_category'")->fetch_all(MYSQLI_ASSOC);
     foreach ($attributes as $key => $attribute) {
         $attribute_id = $attribute['id'];
-        $attribute_value = $mysqli->query("SELECT value_name, id as value_id FROM attributes_values WHERE id IN
-            (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
-        ")->fetch_assoc();
+        $qsssssss = "SELECT value_name, id as value_id FROM attributes_values WHERE id IN
+        (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
+    ";
+
+        $attribute_value = $mysqli->query($qsssssss)->fetch_assoc();
         $attributes[$key]['value'] = $attribute_value['value_name'] ?? "-";
         $attributes[$key]['value_id'] = $attribute_value['value_id'] ?? "-";
         // $attributes[$key]['value'] = $attribute_value['value_name'] ?? "-";
     }
-    $product['attributes'] = $attributes;
+    $product['attributes'] = $qsssssss;
     return $product;
 }
