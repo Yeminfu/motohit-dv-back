@@ -15,7 +15,7 @@ if (isset($_POST['downloadedImages'])) {
         $imagesInDB,
         $downloadedImages,
     );
-
+ 
     foreach ($diff as $key => $image_id) {
         $image_name = $mysqli->query("SELECT name FROM products_media WHERE id = $image_id")->fetch_assoc();
         $deleteRes = $mysqli->query("DELETE FROM products_media WHERE id = $image_id");
