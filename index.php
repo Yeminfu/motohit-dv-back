@@ -831,4 +831,10 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/admin-get-category-attributes/admin-get-category-attributes.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'get-admin-categories')) {
+        require __DIR__ . "/api/modules/admin-get-categories/admin-get-categories.php";
+        exit();
+    }
 }
+
+// /var/www/html/motohit-dv/api/modules/admin-get-categories/admin-get-categories.php
