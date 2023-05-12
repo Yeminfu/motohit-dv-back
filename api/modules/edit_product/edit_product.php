@@ -7,7 +7,7 @@ if (isset($_POST['downloadedImages'])) {
     $downloadedImages = $_POST['downloadedImages'];
 
     $imagesInDB =  array_column(
-        $mysqli->query("SELECT id FROM products_media WHERE product_id = $product_id")->fetch_all(MYSQLI_ASSOC),
+        $mysqli->query("SELECT id FROM media WHERE product_id = $product_id")->fetch_all(MYSQLI_ASSOC),
         'id'
     );
 
@@ -17,8 +17,8 @@ if (isset($_POST['downloadedImages'])) {
     );
 
     foreach ($diff as $key => $image_id) {
-        $image_name = $mysqli->query("SELECT name FROM products_media WHERE id = $image_id")->fetch_assoc();
-        $deleteRes = $mysqli->query("DELETE FROM products_media WHERE id = $image_id");
+        $image_name = $mysqli->query("SELECT name FROM media WHERE id = $image_id")->fetch_assoc();
+        $deleteRes = $mysqli->query("DELETE FROM media WHERE id = $image_id");
         $path_to_file = $config['uploaddir'] . "/" . $image_name['name'];
     }
 }
@@ -49,7 +49,7 @@ if (isset($_POST['attributes'])) {
 
 foreach ($_FILES as $not_named_variable_name => $file) {
     $fileName = basename($file['name']);
-    if ($mysqli->query("SELECT * from products_media WHERE name='$fileName'")->num_rows) { //проверка на наименование файла в бд
+    if ($mysqli->query("SELECT * from media WHERE name='$fileName'")->num_rows) { //проверка на наименование файла в бд
         echo json_encode([
             'success' => false,
             'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
@@ -59,7 +59,7 @@ foreach ($_FILES as $not_named_variable_name => $file) {
         $uploadfile = $config['uploaddir'] . "/" . basename($file['name']);
         if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
 
-            $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$fileName','$product_id')";
+            $qs = "INSERT INTO media (type,name,product_id) VALUES ('product_image','$fileName','$product_id')";
             $result = $mysqli->query($qs);
         } else {
             echo json_encode([

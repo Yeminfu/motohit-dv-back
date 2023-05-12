@@ -226,7 +226,7 @@ if ($json && isset($values_from_post_json['service'])) {
             }
             $product['attributes'] = ($attributes);
 
-            $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id AND type='image_full'")->fetch_all(MYSQLI_ASSOC);
+            $images = $mysqli->query("SELECT name FROM `media` WHERE product_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
             $product['images'] = array_map(function ($image) {
                 global $config;
                 return $config['homeurl'] . "/images/" . $image['name'];
@@ -249,7 +249,7 @@ if ($json && isset($values_from_post_json['service'])) {
         $product = $mysqli->query("SELECT * FROM products WHERE product_name = '$product_name'")->fetch_assoc();
         $product_id = $product['id'];
 
-        $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
+        $images = $mysqli->query("SELECT name FROM `media` WHERE product_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
         $product['images'] = array_map(function ($image) {
             global $config;
             return $config['homeurl'] . "/images/" . $image['name'];
@@ -551,7 +551,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         foreach ($files as $not_named_variable_name => $file) {
 
             $fileName = basename($file['name']);
-            if ($mysqli->query("SELECT * from products_media WHERE name='$fileName'")->num_rows) { //проверка на наименование файла в бд
+            if ($mysqli->query("SELECT * from media WHERE name='$fileName'")->num_rows) { //проверка на наименование файла в бд
                 echo json_encode([
                     'success' => false,
                     'error' => "Товар создан, но файл с именем '$fileName' не удалось сохранить, т.к. он уже существует",
@@ -562,7 +562,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 $uploadfile = $config['uploaddir'] . '/' . basename($file['name']);
                 if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
 
-                    $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$fileName','$new_product_id')";
+                    $qs = "INSERT INTO media (type,name,product_id) VALUES ('product_image','$fileName','$new_product_id')";
                     $result = $mysqli->query($qs);
                 } else {
                     echo json_encode([
@@ -634,7 +634,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             }
             $product['attributes'] = ($attributes);
 
-            $images = $mysqli->query("SELECT name FROM `products_media` WHERE product_id = $product_id AND type='image_full'")->fetch_all(MYSQLI_ASSOC);
+            $images = $mysqli->query("SELECT name FROM `media` WHERE product_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
             $product['images'] = array_map(function ($image) {
                 global $config;
                 return $config['homeurl'] . "/images/" . $image['name'];
@@ -662,83 +662,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'create-category')) {
-        $category_name = $_POST['category_name'];
-
-        if ($mysqli->query("SELECT * from categories WHERE category_name='$category_name'")->num_rows) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Категория с таким названием уже существует',
-            ], JSON_UNESCAPED_UNICODE);
-            exit();
-        }
-
-
-        $description = $_POST['description'];
-        // $characteristics = json_decode($_POST['characteristics']);
-        $files = $_FILES;
-
-        $parent = (isset($_POST['parent'])) ? ("'" . $_POST['parent'] . "'") : null;
-
-        $params = [
-            'category_name' => $category_name,
-            'description' => $description,
-        ];
-        if (isset($_POST['parent'])) $params['parent'] = $_POST['parent'];
-
-        $cols = implode(",", array_keys($params));
-        $values = implode(",", array_map(function ($value) {
-            return "'$value'";
-        }, array_values($params)));
-
-        $qs = "INSERT INTO categories ($cols) VALUES ($values)";
-
-        try {
-            $mysqli->query($qs);
-            $new_category_id = $mysqli->insert_id;
-        } catch (\Throwable $th) {
-            echo json_encode([
-                'success' => false,
-                'error' => "Возможно не всё заполнили " . $th->getMessage(),
-            ], JSON_UNESCAPED_UNICODE);
-            exit();
-        }
-
-        //TODO добавить в бд возможность создания картинок для категорий
-
-
-        // foreach ($files as $file_name => $file) {
-        //     if ($mysqli->query("SELECT * from products_media WHERE name='$file_name'")->num_rows) { //проверка на наименование файла в бд
-        //         echo json_encode([
-        //             'success' => false,
-        //             'error' => "Файл с именем '$file_name' уже существует",
-        //         ]);
-        //         exit();
-        //     } else {
-        //         $uploaddir = __DIR__ . '/images/';
-        //         $uploadfile = $uploaddir . basename($file['name']);
-        //         if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
-        //             $qs = "INSERT INTO products_media (type,name,product_id) VALUES ('image_full','$file_name','$new_product_id')";
-        //             $result = $mysqli->query($qs);
-        //         } else {
-        //             echo json_encode([
-        //                 'success' => false,
-        //                 'error' => "Не удалось сохранить '$file_name'. Пожалуйста обратитесь в службу поддержки",
-        //             ]);
-        //         }
-        //     }
-        // }
-
-        echo json_encode([
-            'success' => true,
-            'product' => [
-                // 'name' => $product_name,
-                'new_category_id' => $new_category_id,
-                // 'price' => $price,
-                // 'description' => $description,
-                // 'images' => $mysqli->query("SELECT * FROM products_media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
-            ],
-        ], JSON_UNESCAPED_UNICODE);
-
+        require __DIR__ . "/api/modules/create-category/create-category.php";
         exit();
     }
     if ((isset($uri[2]) && $uri[2] == 'get-products')) {
