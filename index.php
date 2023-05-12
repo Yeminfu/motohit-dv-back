@@ -827,4 +827,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/admin-attributes/delete-attribute-value.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'get-category-attributes')) {
+        require __DIR__ . "/api/modules/admin-get-category-attributes/admin-get-category-attributes.php";
+        exit();
+    }
 }
