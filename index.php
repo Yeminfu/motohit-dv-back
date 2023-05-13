@@ -759,6 +759,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/admin-get-categories/admin-get-categories.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'delete-category')) {
+        require __DIR__ . "/api/modules/delete-category.php";
+        exit();
+    }
 }
-
-// /var/www/html/motohit-dv/api/modules/admin-get-categories/admin-get-categories.php
