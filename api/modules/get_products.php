@@ -64,7 +64,7 @@ array_walk($products, function (&$product) {
     }
     $product['attributes'] = ($attributes);
 
-    $images = $mysqli->query("SELECT name FROM `media` WHERE product_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
+    $images = $mysqli->query("SELECT name FROM `media` WHERE essense_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
     $product['images'] = array_map(function ($image) {
         global $config;
         return $config['homeurl'] . "/images/" . $image['name'];

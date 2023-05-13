@@ -7,7 +7,7 @@ if (isset($_POST['downloadedImages'])) {
     $downloadedImages = $_POST['downloadedImages'];
 
     $imagesInDB =  array_column(
-        $mysqli->query("SELECT id FROM media WHERE product_id = $product_id")->fetch_all(MYSQLI_ASSOC),
+        $mysqli->query("SELECT id FROM media WHERE essense_id = $product_id")->fetch_all(MYSQLI_ASSOC),
         'id'
     );
 
@@ -59,7 +59,7 @@ foreach ($_FILES as $not_named_variable_name => $file) {
         $uploadfile = $config['uploaddir'] . "/" . basename($file['name']);
         if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
 
-            $qs = "INSERT INTO media (type,name,product_id) VALUES ('product_image','$fileName','$product_id')";
+            $qs = "INSERT INTO media (type,name,essense_id) VALUES ('product_image','$fileName','$product_id')";
             $result = $mysqli->query($qs);
         } else {
             echo json_encode([

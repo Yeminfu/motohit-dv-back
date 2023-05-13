@@ -58,7 +58,7 @@ foreach ($_FILES as $not_named_variable_name => $file) {
             $uploadfile = $config['uploaddir'] . "/" . basename($file['name']);
             if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
 
-                $qs = "INSERT INTO media (type,name,product_id) VALUES ('category_image','$fileName','$new_category_id')";
+                $qs = "INSERT INTO media (type,name,essense_id) VALUES ('category_image','$fileName','$new_category_id')";
                 $result = $mysqli->query($qs);
             } else {
                 echo json_encode([
@@ -84,6 +84,6 @@ echo json_encode([
         ]),
         // 'price' => $price,
         // 'description' => $description,
-        // 'images' => $mysqli->query("SELECT * FROM media WHERE product_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
+        // 'images' => $mysqli->query("SELECT * FROM media WHERE essense_id = '$new_product_id'")->fetch_all(MYSQLI_ASSOC),
     ],
 ], JSON_UNESCAPED_UNICODE);

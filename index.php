@@ -226,7 +226,7 @@ if ($json && isset($values_from_post_json['service'])) {
             }
             $product['attributes'] = ($attributes);
 
-            $images = $mysqli->query("SELECT name FROM `media` WHERE product_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
+            $images = $mysqli->query("SELECT name FROM `media` WHERE essense_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
             $product['images'] = array_map(function ($image) {
                 global $config;
                 return $config['homeurl'] . "/images/" . $image['name'];
@@ -249,7 +249,7 @@ if ($json && isset($values_from_post_json['service'])) {
         $product = $mysqli->query("SELECT * FROM products WHERE product_name = '$product_name'")->fetch_assoc();
         $product_id = $product['id'];
 
-        $images = $mysqli->query("SELECT name FROM `media` WHERE product_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
+        $images = $mysqli->query("SELECT name FROM `media` WHERE essense_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
         $product['images'] = array_map(function ($image) {
             global $config;
             return $config['homeurl'] . "/images/" . $image['name'];
@@ -562,7 +562,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
                 $uploadfile = $config['uploaddir'] . '/' . basename($file['name']);
                 if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
 
-                    $qs = "INSERT INTO media (type,name,product_id) VALUES ('product_image','$fileName','$new_product_id')";
+                    $qs = "INSERT INTO media (type,name,essense_id) VALUES ('product_image','$fileName','$new_product_id')";
                     $result = $mysqli->query($qs);
                 } else {
                     echo json_encode([
@@ -634,7 +634,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             }
             $product['attributes'] = ($attributes);
 
-            $images = $mysqli->query("SELECT name FROM `media` WHERE product_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
+            $images = $mysqli->query("SELECT name FROM `media` WHERE essense_id = $product_id AND type='product_image'")->fetch_all(MYSQLI_ASSOC);
             $product['images'] = array_map(function ($image) {
                 global $config;
                 return $config['homeurl'] . "/images/" . $image['name'];
