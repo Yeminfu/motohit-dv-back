@@ -763,4 +763,8 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/delete-category.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-category')) {
+        require __DIR__ . "/api/modules/admin_data_for_edit_category/admin_data_for_edit_category.php";
+        exit();
+    }
 }
