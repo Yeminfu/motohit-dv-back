@@ -1,0 +1,45 @@
+
+-- Создаем нужные роли
+  INSERT INTO roles (role_name) VALUES ('superuser');
+  INSERT INTO roles (role_name) VALUES ('director');
+  INSERT INTO roles (role_name) VALUES ('manager');
+  INSERT INTO roles (role_name) VALUES ('client');
+  INSERT INTO roles (role_name) VALUES ('guest');
+
+-- Создаем нужных пользователей
+  INSERT INTO users (email, phone, password, role, username, first_name, last_name) VALUES ('managa@mail.ru', '7895-798-88-98', 'manamana', '3', 'manager_managerov','Менеджер', 'Менеджеренович');
+
+
+-- Создаем нужные статусы товара
+  INSERT INTO stock_statuses (status_name) VALUES ('В наличии');
+  INSERT INTO stock_statuses (status_name) VALUES ('На складе');
+  INSERT INTO stock_statuses (status_name) VALUES ('В пути');
+  INSERT INTO stock_statuses (status_name) VALUES ('Скоро будет');
+
+-- Создаем нужные категории
+  INSERT INTO categories (category_name, description) VALUES ('Электро транспорт', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (1, 'Электросамокаты', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (1, 'Электровелосипеды', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (1, 'Комплекты для электровелосипедов', 'Описание');
+
+  INSERT INTO categories (category_name, description) VALUES ('Мотоциклы и мопеды', 'Описание');
+  INSERT INTO categories (category_name, description) VALUES ('Квадроциклы', 'Описание');
+  INSERT INTO categories (category_name, description) VALUES ('Снегоходы, Буксировщики, Болотоходы', 'Описание');
+
+  INSERT INTO categories (category_name, description) VALUES ('Лодки', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (8, 'Лодки ПВХ', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (8, 'Лодки ПНД', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (8, 'Лодки аллюминиевые', 'Описание');
+
+  INSERT INTO categories (category_name, description) VALUES ('ПЛМ', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (12, 'Лодочные моторы', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (12, 'Водометы и водометные насадки', 'Описание');
+
+  INSERT INTO categories (category_name, description) VALUES ('Садовая техника', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (15, 'Навесное к мотоблокам', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (15, 'Мотоблоки (бензоинструмент)', 'Описание');
+      INSERT INTO categories (parent, category_name, description) VALUES (15, 'Двигатели внутреннего сгорания (ДВС)', 'Описание');
+
+  INSERT INTO categories (category_name, description) VALUES ('Велосипеды', 'Описание');
+  INSERT INTO categories (category_name, description) VALUES ('Прицепы для водной и мототехники', 'Описание');
+  INSERT INTO categories (category_name, description) VALUES ('Прицепы для водной и мототехники', 'Описание');
