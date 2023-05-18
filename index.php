@@ -51,18 +51,8 @@ use Firebase\JWT\Key;
 require __DIR__ . '/vendor/autoload.php';
 
 
-// echo json_encode([
-//     'jwt' => $jwt,
-//     '$decoded' => $decoded,
-// ]);
-
-// exit();
-// sleep(1 / 2);
-// time_nanosleep(0, 500000000);
-
 $values_from_post_json = json_decode($json, true);
 
-// sleep(1);
 
 // echo json_encode(
 //     [
@@ -503,6 +493,39 @@ if ($json && isset($values_from_post_json['service'])) {
             ], JSON_UNESCAPED_UNICODE);
         }
     }
+
+    if ($values_from_post_json['service'] == 'get-filter-attributes') {
+        // SELECT * FROM attributes WHERE category IN (SELECT id FROM categories WHERE category_name = 'электросамокаты');
+        $category = $values_from_post_json['category'];
+        try {
+            $qs = "SELECT * from attributes WHERE view_in_filter=1 AND category IN (SELECT id FROM categories WHERE category_name = '$category')";
+            $result = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $th) {
+            echo json_encode([
+                'success' => false,
+                'error' => "Что-то пошло не так [get-filter-attributes]" . $th->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+            exit();
+        }
+
+        array_walk($result, function (&$attribute) {
+            global $mysqli;
+            $attribute_id = $attribute['id'];
+            $attribute['values'] = $mysqli->query("SELECT * from attributes_values WHERE attribute = $attribute_id")->fetch_all(MYSQLI_ASSOC);
+        });
+
+        if (count($result)) {
+            echo json_encode([
+                'success' => true,
+                'data' => $result
+            ], JSON_UNESCAPED_UNICODE);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => "Атрибуты не созданы"
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
 }
 
 if (isset($uri[1]) && $uri[1] == 'api') {
@@ -765,6 +788,10 @@ if (isset($uri[1]) && $uri[1] == 'api') {
     }
     if ((isset($uri[2]) && $uri[2] == 'admin-data-for-edit-category')) {
         require __DIR__ . "/api/modules/admin_data_for_edit_category/admin_data_for_edit_category.php";
+        exit();
+    }
+    if ((isset($uri[2]) && $uri[2] == 'get-attributes-to-category-filter')) {
+        require __DIR__ . "/api/modules/get_attributes_to_category_filter/get_attributes_to_category_filter.php";
         exit();
     }
 }
