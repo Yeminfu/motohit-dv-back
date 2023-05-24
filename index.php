@@ -543,7 +543,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         $price = $_POST['price'];
         $category = $_POST['category'];
         $description = $_POST['description'];
-        $attributes = json_decode($_POST['attributes']);
+        // $attributes = json_decode($_POST['attributes']);
         $stock_status = $_POST['stock_status'];
         $files = $_FILES;
 
@@ -571,6 +571,34 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             exit();
         }
 
+
+        // $attributes = json_decode($_POST['attributes']);
+        if (isset($_POST['attributes'])) {
+            foreach (json_decode($_POST['attributes']) as $attribute) {
+                $params = [
+                    'attribute' => $attribute->attribute,
+                    'attribute_value' => $attribute->value_name,
+                    'product' => $new_product_id,
+                ];
+                $cols = implode(",", array_keys($params));
+                $values = implode(",", array_map(function ($value) {
+                    return "'$value'";
+                }, array_values($params)));
+                $qs = "INSERT INTO attr_prod_relation ($cols) VALUES ($values)";
+                try {
+                    $mysqli->query($qs);
+                    $new_category_id = $mysqli->insert_id;
+                } catch (\Throwable $th) {
+                    echo json_encode([
+                        'success' => false,
+                        'error' => "Товар создан, но есть проблемы с атрибутами " . $th->getMessage(),
+                    ], JSON_UNESCAPED_UNICODE);
+                    exit();
+                }
+            }
+        }
+
+
         foreach ($files as $not_named_variable_name => $file) {
 
             $fileName = basename($file['name']);
@@ -596,28 +624,6 @@ if (isset($uri[1]) && $uri[1] == 'api') {
             }
         }
 
-        foreach ($attributes as $attribute) {
-            $params = [
-                'attribute' => $attribute->attribute,
-                'attribute_value' => $attribute->value_name,
-                'product' => $new_product_id,
-            ];
-            $cols = implode(",", array_keys($params));
-            $values = implode(",", array_map(function ($value) {
-                return "'$value'";
-            }, array_values($params)));
-            $qs = "INSERT INTO attr_prod_relation ($cols) VALUES ($values)";
-            try {
-                $mysqli->query($qs);
-                $new_category_id = $mysqli->insert_id;
-            } catch (\Throwable $th) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => "Товар создан, но есть проблемы с атрибутами " . $th->getMessage(),
-                ], JSON_UNESCAPED_UNICODE);
-                exit();
-            }
-        }
 
         echo json_encode([
             'success' => true,
