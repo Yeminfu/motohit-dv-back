@@ -14,7 +14,7 @@ $category_name = $values_from_post_json['category'];
 
 $filterBy[] = "category IN (SELECT id FROM categories WHERE category_name = '$category_name')";
 
-$columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "description", "price", "category",]);
+$columns = implode(",", ["id", "stock_status", "created_date", "created_by", "is_active", "product_name", "slug", "description", "price", "category",]);
 
 if (isset($values_from_post_json['params'])) {
     if (isset($values_from_post_json['params']['price_min'])) {

@@ -234,9 +234,9 @@ if ($json && isset($values_from_post_json['service'])) {
     }
 
     if ($values_from_post_json['service'] == 'get-product') {
-        $product_name = $values_from_post_json['product'];
+        $slug = $values_from_post_json['product'];
 
-        $product = $mysqli->query("SELECT * FROM products WHERE product_name = '$product_name'")->fetch_assoc();
+        $product = $mysqli->query("SELECT * FROM products WHERE slug = '$slug'")->fetch_assoc();
         $product_id = $product['id'];
 
         $images = $mysqli->query("SELECT name FROM `media` WHERE essense_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
