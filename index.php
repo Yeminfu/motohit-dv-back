@@ -29,6 +29,7 @@ $config = [
 ];
 
 require __DIR__ . "/api/modules/mysqli.php";
+require __DIR__ . "/api/modules/slugMaker.php";
 
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: " . $mysqli->connect_error;
@@ -234,34 +235,8 @@ if ($json && isset($values_from_post_json['service'])) {
     }
 
     if ($values_from_post_json['service'] == 'get-product') {
-        $slug = $values_from_post_json['product'];
-
-        $product = $mysqli->query("SELECT * FROM products WHERE slug = '$slug'")->fetch_assoc();
-        $product_id = $product['id'];
-
-        $images = $mysqli->query("SELECT name FROM `media` WHERE essense_id = $product_id ")->fetch_all(MYSQLI_ASSOC);
-        $product['images'] = array_map(function ($image) {
-            global $config;
-            return $config['homeurl'] . "/images/" . $image['name'];
-        }, $images);
-
-        $product_category = $product['category'];
-        $attributes = $mysqli->query("SELECT id, attribute_name FROM attributes WHERE category = '$product_category'")->fetch_all(MYSQLI_ASSOC);
-        foreach ($attributes as $key => $attribute) {
-            $attribute_id = $attribute['id'];
-            $attribute_value = $mysqli->query("SELECT value_name FROM attributes_values WHERE id IN
-                    (SELECT attribute FROM attr_prod_relation WHERE product = $product_id AND attribute = $attribute_id)
-                ")->fetch_assoc();
-            $attributes[$key]['value'] = $attribute_value['value_name'] ?? "-";
-        }
-        $product['attributes'] = $attributes;
-
-        if ($product) {
-            echo json_encode([
-                'success' => true,
-                'data' => $product,
-            ], JSON_UNESCAPED_UNICODE);
-        }
+        require __DIR__ . "/api/modules/get-product/get-product.php";
+        exit();
 
         exit();
     }
@@ -530,9 +505,12 @@ if ($json && isset($values_from_post_json['service'])) {
 
 if (isset($uri[1]) && $uri[1] == 'api') {
     if ((isset($uri[2]) && $uri[2] == 'create-product')) {
+
         $product_name = $_POST['product_name'];
 
-        if ($mysqli->query("SELECT * from products WHERE product_name='$product_name'")->num_rows) {
+        $slug = slugMaker($product_name);
+
+        if ($mysqli->query("SELECT * from products WHERE slug='$slug'")->num_rows) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Товар с таким названием уже существует',
@@ -549,6 +527,7 @@ if (isset($uri[1]) && $uri[1] == 'api') {
 
         $params = [
             'product_name' => $product_name,
+            'slug' => $slug,
             'price' => $price,
             'description' => $description,
             'category' => $category,
