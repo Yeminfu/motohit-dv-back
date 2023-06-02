@@ -673,6 +673,10 @@ if (isset($uri[1]) && $uri[1] == 'api') {
         require __DIR__ . "/api/modules/create-category/create-category.php";
         exit();
     }
+    if ((isset($uri[2]) && $uri[2] == 'random-products')) {
+        require __DIR__ . "/api/modules/random-products/random-products.php";
+        exit();
+    }
     if ((isset($uri[2]) && $uri[2] == 'get-products')) {
         require __DIR__ . "/api/modules/get_products.php";
     }
