@@ -3,40 +3,10 @@
 $perPage = 4;
 
 if (isset($values_from_post_json['init'])) {
-
-    $categories = $mysqli->query("SELECT * from categories WHERE is_active")->fetch_all(MYSQLI_ASSOC);
-
-    $parents = array_map(function ($c) {
-        return $c['parent'];
-    }, $categories);
-
-    $categoriesWithoutChildren = array_filter(
-        $categories,
-        function ($category) use ($parents) {
-            return !in_array(
-                $category['id'],
-                $parents
-            );
-        }
-    );
-
-    array_walk(
-        $categoriesWithoutChildren,
-        function (&$category) use ($mysqli, $perPage) {
-            $category_id = $category['id'];
-            $products = $mysqli->query("SELECT COUNT(*) as count from products WHERE category = $category_id")->fetch_assoc()['count'];
-            $category['pages'] = ceil($products / $perPage);
-        }
-    );
-
-    $firstCategory_id = array_shift($categoriesWithoutChildren)['id'];
-    $qs = "SELECT * from products WHERE category = $firstCategory_id LIMIT $perPage ";
-    $products = $mysqli->query($qs)->fetch_all(MYSQLI_ASSOC);
-
-    echo json_encode([
-        'categories' => $categoriesWithoutChildren,
-        'products' => $products,
-    ]);
+    require __DIR__."/init.php";
+    exit();
+} else {
+    require __DIR__."/with_params.php";
     exit();
 }
 
